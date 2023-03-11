@@ -18,7 +18,7 @@ import arcade
 import math
 import os
 
-from itsdangerous import NoneAlgorithm
+#from itsdangerous import NoneAlgorithm
 
 # --- Constants ---
 SPRITE_SCALING_PLAYER = 0.5
@@ -38,6 +38,7 @@ SCREEN_TITLE = "Sprite Follow Player Simple Example 2"
 # Speed Constants
 SPRITE_SPEED = 3
 PLAYER_SPEED = 5
+UPDATES_PER_FRAME = 5
 COW_SPEED = 0.8
 BASIC_PROJECTILE_SPEED = 4
 
@@ -48,7 +49,78 @@ STARTING_PLAYER_HEALTH = 100
 # The number of smaller objects the splinter projectile creates upon impact with an enemy
 SPLINTER_BOUNCES = 5
 
+# Used to track if the player is facing left or right
+RIGHT_FACING = 0
+LEFT_FACING = 1
+
 UPGRADE_TYPES = ["Basic", "Splinter"]
+
+def load_texture_pair(filename):
+    """
+    Load a texture pair, with the second being a mirror image.
+    """
+    return [
+        arcade.load_texture(filename),
+        arcade.load_texture(filename, flipped_horizontally=True)
+    ]
+class PlayerCharacter(arcade.Sprite):
+    def __init__(self):
+
+        # Set up parent class
+        super().__init__()
+
+        # Default to face-right
+        self.character_face_direction = RIGHT_FACING
+
+        # Used for flipping between image sequences
+        self.cur_texture = 0
+
+        self.scale = SPRITE_SCALING_PLAYER
+
+        # Adjust the collision box. Default includes too much empty space
+        # side-to-side. Box is centered at sprite center, (0, 0)
+        self.points = [[-22, -64], [22, -64], [22, 28], [-22, 28]]
+
+        # --- Load Textures ---
+
+        # Images from Kenney.nl's Asset Pack 3
+        # main_path = ":resources:images/animated_characters/female_adventurer/femaleAdventurer"
+        # main_path = ":resources:images/animated_characters/female_person/femalePerson"
+        main_path = ":resources:images/animated_characters/male_person/malePerson"
+        # main_path = ":resources:images/animated_characters/male_adventurer/maleAdventurer"
+        #main_path = ":resources:images/animated_characters/zombie/zombie"
+        #main_path = ":resources:images/animated_characters/robot/robot"
+
+        # Load textures for idle standing
+        self.idle_texture_pair = load_texture_pair(f"{main_path}_idle.png")
+
+        # Load textures for walking
+        self.walk_textures = []
+        for i in range(8):
+            texture = load_texture_pair(f"{main_path}_walk{i}.png")
+            self.walk_textures.append(texture)
+
+    def update_animation(self, delta_time: float = 1 / 60):
+
+        # Figure out if we need to flip face left or right
+        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
+            self.character_face_direction = LEFT_FACING
+        elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
+            self.character_face_direction = RIGHT_FACING
+
+        # Idle animation
+        if self.change_x == 0 and self.change_y == 0:
+            self.texture = self.idle_texture_pair[self.character_face_direction]
+            return
+
+        # Walking animation
+        self.cur_texture += 1
+        if self.cur_texture > 7 * UPDATES_PER_FRAME:
+            self.cur_texture = 0
+        frame = self.cur_texture // UPDATES_PER_FRAME
+        direction = self.character_face_direction
+        self.texture = self.walk_textures[frame][direction]
+
 
 # THis is the basic enemy class. We are calling it cow for now but it is just an enemy that takes 1 hit and follows the player
 class Cow(arcade.Sprite):
@@ -225,8 +297,7 @@ class MyGame(arcade.Window):
 
         # Set up the player
         # Character image from kenney.nl
-        self.player_sprite = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png",
-                                           SPRITE_SCALING_PLAYER)
+        self.player_sprite = PlayerCharacter()
         self.player_sprite.center_x = 300
         self.player_sprite.center_y = 300
         self.player_list.append(self.player_sprite)
@@ -290,6 +361,9 @@ class MyGame(arcade.Window):
     def on_update(self, delta_time):
         """ Movement and game logic """
         self.player_list.update()
+
+        # Update the players animation
+        self.player_list.update_animation()
     
         for cow in self.cow_list:
             cow.follow_sprite(self.player_sprite)
@@ -396,6 +470,10 @@ class MyGame(arcade.Window):
         
         if key == arcade.key.ENTER and self.health == 0:
             self.setup()
+
+        if key == arcade.key.ESCAPE:
+            print("Program terminated manually!")
+            arcade.exit()
 
     def on_mouse_motion(self, x, y, dx, dy):
 
