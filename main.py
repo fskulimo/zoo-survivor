@@ -19,13 +19,12 @@ import math
 import os
 
 from enemies import *
+from projectiles import *
 
-#from itsdangerous import NoneAlgorithm
 
 # --- Constants ---
 SPRITE_SCALING_PLAYER = 0.5
 SPRITE_SCALING_COW = 0.3
-SPRITE_SCALING_CARROT = 0.05
 SPRITE_SCALING_LARGE_BANANA = 0.15
 SPRITE_SCALING_SMALL_BANANA = 0.05
 
@@ -41,12 +40,9 @@ SCREEN_TITLE = "Sprite Follow Player Simple Example 2"
 SPRITE_SPEED = 3
 PLAYER_SPEED = 5
 UPDATES_PER_FRAME = 5
-COW_SPEED = 0.8
-BASIC_PROJECTILE_SPEED = 4
 
 # Player stats constants
 STARTING_PLAYER_HEALTH = 100
-
 
 # The number of smaller objects the splinter projectile creates upon impact with an enemy
 SPLINTER_BOUNCES = 5
@@ -124,71 +120,6 @@ class PlayerCharacter(arcade.Sprite):
         self.texture = self.walk_textures[frame][direction]
 
 
-# THis is the basic enemy class. We are calling it cow for now but it is just an enemy that takes 1 hit and follows the player
-# Basic projectile class. Shoots in the direction of the mouse starting at the player
-class Basic_Projectile(arcade.Sprite):
-    target_x = None
-    target_y = None
-    player_location = (0,0)
-
-    def __init__(self, image, scale, target_x, target_y, player_location):
-        super().__init__(image, scale)
-        self.position = player_location
-        self.target_x = target_x
-        self.target_y = target_y
-        self.player_location = player_location
-
-    def move(self):   
-        player_x = self.player_location[0]
-        player_y = self.player_location[1]
-        
-        delta_x = self.target_x - player_x
-        delta_y = self.target_y - player_y
-
-        magnitude = abs(sqrt((delta_x * delta_x) + (delta_y * delta_y)))
-
-        unit_x = delta_x / magnitude
-        unit_y = delta_y / magnitude
-
-        self.change_x = unit_x * BASIC_PROJECTILE_SPEED
-        self.change_y = unit_y * BASIC_PROJECTILE_SPEED
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-class Splinter_Projectile(arcade.Sprite):
-    target_x = None
-    target_y = None
-    spawn_location = (0,0)
-    splinters_left = None
-
-    def __init__(self, image, scale, target_x, target_y, spawn_location, splinters_left):
-        super().__init__(image, scale)
-        self.position = spawn_location
-        self.target_x = target_x
-        self.target_y = target_y
-        self.splinters_left = splinters_left
-        self.spawn_location = spawn_location
-
-    def move(self):
-        
-        spawn_x = self.spawn_location[0]
-        spawn_y = self.spawn_location[1]
-        
-        delta_x = self.target_x - spawn_x
-        delta_y = self.target_y - spawn_y
-
-        magnitude = abs(sqrt((delta_x * delta_x) + (delta_y * delta_y)))
-
-        unit_x = delta_x / magnitude
-        unit_y = delta_y / magnitude
-
-        self.change_x = unit_x * 4
-        self.change_y = unit_y * 4
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
 class Upgrade(arcade.Sprite):
     type = None
     def __init__(self, image, scale, type):
@@ -214,8 +145,9 @@ class MyGame(arcade.Window):
 
         # Variables that will hold sprite lists
         self.player_list = None
-        self.cow_list = None
+        self.enemy_list = None
         self.projectile_list = None
+        self.enemy_projectile_list = None
         self.upgrade_list = None
 
         # Set up the player info
@@ -250,9 +182,11 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
-        self.cow_list = arcade.SpriteList()
+        self.enemy_list = arcade.SpriteList()
         self.projectile_list = arcade.SpriteList()
         self.upgrade_list = arcade.SpriteList()
+        self.enemy_projectile_list = arcade.SpriteList()
+
 
         # Score
         self.score = 0
@@ -273,14 +207,14 @@ class MyGame(arcade.Window):
         # Create the cows
         for i in range(COW_COUNT):
             # Create the cow instance
-            cow = Cow("images/cow.png", SPRITE_SCALING_COW)
+            cow = Cow()
 
             # Position the cow
             cow.center_x = random.randrange(SCREEN_WIDTH)
             cow.center_y = random.randrange(SCREEN_HEIGHT)
 
             if distance([cow.center_x, cow.center_y], self.player_sprite.position) > 50:
-                self.cow_list.append(cow)
+                self.enemy_list.append(cow)
         
             
 
@@ -290,23 +224,63 @@ class MyGame(arcade.Window):
             for angle in range(0, 12, 1):
                 start_x = start_position[0]
                 start_y = start_position[1]
-                projectile = Basic_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, start_x + math.cos(angle/2), start_y + math.sin(angle/2), start_position)
+                projectile = Basic_Projectile(start_x + math.cos(angle/2), start_y + math.sin(angle/2), start_position)
                 self.projectile_list.append(projectile)
 
+    def generate_upgrades(self):
+        # Randomly generating upgrades
+        if random.randrange(700) == 0:
+            upgrade_type = UPGRADE_TYPES[random.randrange(len(UPGRADE_TYPES))]
+            if upgrade_type == "Splinter":
+                upgrade = Upgrade("images/banana_item.png", SPRITE_SCALING_LARGE_BANANA, "Splinter")
+                
+            elif upgrade_type == "Basic":
+                upgrade = Upgrade("images/carrot_item.png", SPRITE_SCALING_CARROT, "Basic")
+            
+            upgrade.center_x = random.randrange(SCREEN_WIDTH)
+            upgrade.center_y = random.randrange(SCREEN_HEIGHT)
+
+            # Adding the upgrade to upgrad_list
+            self.upgrade_list.append(upgrade)
+    
+    def generate_enemies(self):
+        # Randomly generating Cows
+        if random.randrange(100) == 0:
+            cow = Cow()
+            cow.center_x = random.randrange(SCREEN_WIDTH)
+            cow.center_y = random.randrange(SCREEN_HEIGHT)
+            
+            # Add the cow to the lists if not super close to player
+            if distance([cow.center_x, cow.center_y], self.player_sprite.position) > 50:
+                self.enemy_list.append(cow)
+        
+        # Randomly generating Seals
+        if self.time > 10 and random.randrange(500) == 0:
+                seal = Seal()
+                seal.center_x = random.randrange(SCREEN_WIDTH)
+                seal.center_y = random.randrange(SCREEN_HEIGHT)
+                self.enemy_list.append(seal)
+        
+    def fire_seal_projectiles(self):
+        for enemy in self.enemy_list:
+            if type(enemy) is Seal:
+                time_since_fire = self.time - enemy.last_fire_time
+                if time_since_fire > 4:
+                    self.enemy_projectile_list.append(enemy.fire_ball(self.player_sprite.position))
+                    enemy.last_fire_time = self.time
     def on_draw(self):
         """ Draw everything """
         self.clear()            
-        self.cow_list.draw()
+        self.enemy_list.draw()
         self.player_list.draw()
         self.projectile_list.draw()
         self.upgrade_list.draw()
+        self.enemy_projectile_list.draw()
 
         # Put the text on the screen.
         output = f"Score: {self.score}"
         arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
-
         arcade.draw_text("Weapon Selected: " + self.weapon_selected, 550,20, arcade.color.WHITE, 14)
-
         arcade.draw_text("Health: " + self.health.__str__(), 10, 550, arcade.color.RED, 14)
 
         # Basic loss condition. TODO do this with scenes instead
@@ -329,30 +303,33 @@ class MyGame(arcade.Window):
 
 
     def on_update(self, delta_time):
+        # Updating time and the player sprite
         self.time += delta_time
-        """ Movement and game logic """
         self.player_list.update()
 
         # Update the players animation
         self.player_list.update_animation()
     
-        for cow in self.cow_list:
-            cow.follow_sprite(self.player_sprite)
+        for enemy in self.enemy_list:
+            if type(enemy) is Cow:
+                enemy.follow_sprite(self.player_sprite)
+            if type(enemy) is Seal:
+                enemy.follow_sprite(self.enemy_list[random.randrange(len(self.enemy_list))])
 
-        # Generate a list of all sprites that collided with the player.
+        # Checking sprite collisions
         hit_list = arcade.SpriteList()
-        for cow in self.cow_list:
+        # Checking if a projectile hit a cow
+        for cow in self.enemy_list:
             if len(arcade.check_for_collision_with_list(cow, self.projectile_list)) > 0:
                 hit_list.append(cow)
-        
-        player_hit = len(arcade.check_for_collision_with_list(self.player_sprite, self.cow_list)) > 0
+                cow.health -= 1
+        # Checking if a player has been hit by an enemy
+        player_hit = len(arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)) > 0
         if player_hit and self.health > 0:
             self.health -= 1
             arcade.set_background_color(arcade.color.AMERICAN_ROSE)
         else:
             arcade.set_background_color(arcade.color.AMAZON)
-
-
 
         # Checking for projectile collisions and deleting the projectiles if they have collided
         for projectile in self.projectile_list:
@@ -370,6 +347,12 @@ class MyGame(arcade.Window):
 
                         splinter_projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_SMALL_BANANA, target_x, target_y, projectile.position, 0)
                         self.projectile_list.append(splinter_projectile)
+        for projectile in self.enemy_projectile_list:
+           if len(arcade.check_for_collision_with_list(projectile, self.player_list)) > 0:
+               self.health -= 10
+               arcade.set_background_color(arcade.color.AMERICAN_ROSE)
+               projectile.kill()
+
 
         # Check for collisions between player and upgrade
         for upgrade in self.upgrade_list:
@@ -380,39 +363,26 @@ class MyGame(arcade.Window):
 
 
         # Loop through each colliding sprite, remove it, and add to the score.
-        for cow in hit_list:
-            cow.kill()
-            self.score += 1
+        for enemy in hit_list:
+            if enemy.health <= 0:
+                enemy.kill()
+                self.score += 1
         
         # Making every projectile move towards target
         for projectile in self.projectile_list:
             projectile.move()
+        
+        for projectile in self.enemy_projectile_list:
+            projectile.move()
             
+        # Spawning enemies
+        self.generate_enemies()
 
-        # Randomly generating Cows
-        if random.randrange(50) == 0:
-            cow = Cow("images/cow.png", SPRITE_SCALING_COW)
-            cow.center_x = random.randrange(SCREEN_WIDTH)
-            cow.center_y = random.randrange(SCREEN_HEIGHT)
-            
-            # Add the cow to the lists if not super close to player
-            if distance([cow.center_x, cow.center_y], self.player_sprite.position) > 50:
-                self.cow_list.append(cow)
+        # Creates upgrades
+        self.generate_upgrades()
 
-        # Randomly generating upgrades
-        if random.randrange(700) == 0:
-            upgrade_type = UPGRADE_TYPES[random.randrange(len(UPGRADE_TYPES))]
-            if upgrade_type == "Splinter":
-                upgrade = Upgrade("images/banana_item.png", SPRITE_SCALING_LARGE_BANANA, "Splinter")
-                
-            elif upgrade_type == "Basic":
-                upgrade = Upgrade("images/carrot_item.png", SPRITE_SCALING_CARROT, "Basic")
-            
-            upgrade.center_x = random.randrange(SCREEN_WIDTH)
-            upgrade.center_y = random.randrange(SCREEN_HEIGHT)
+        self.fire_seal_projectiles()
 
-            # Adding the upgrade to upgrad_list
-            self.upgrade_list.append(upgrade)
 
     def on_key_press(self, key, modifiers):
        
@@ -432,7 +402,7 @@ class MyGame(arcade.Window):
         if key == arcade.key.SPACE:
             weapon_delta_time = self.time - self.last_fire
             if self.weapon_selected == "Basic" and weapon_delta_time > 0.3 :
-                projectile = Basic_Projectile("images/carrot.png", SPRITE_SCALING_CARROT, self.mouse_x, self.mouse_y, self.player_sprite.position)
+                projectile = Basic_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
             elif self.weapon_selected == "Splinter" and weapon_delta_time > 1:
                 projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x, self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
             self.projectile_list.append(projectile)
@@ -444,6 +414,7 @@ class MyGame(arcade.Window):
             self.banana_bomb(self.player_sprite.position)
         
         if key == arcade.key.ENTER and self.health == 0:
+            self.__init__()
             self.setup()
 
         if key == arcade.key.ESCAPE:
@@ -469,11 +440,6 @@ class MyGame(arcade.Window):
         elif key == arcade.key.D:
             self.d_pressed = False
             self.update_player_speed()
-    
-    
-
-
-
 
 def main():
     """ Main function """

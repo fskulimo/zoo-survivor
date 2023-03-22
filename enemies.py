@@ -1,15 +1,28 @@
 import random
 import arcade
 import math
+import projectiles
 
 COW_SPEED = 0.8
+SEAL_SPEED = 0.2
+
+SPRITE_SCALING_COW = 0.3
+SPRITE_SCALING_SEAL = 0.4
 
 
-class Cow(arcade.Sprite):
+class Enemy(arcade.Sprite):
     """
     This class represents the cows on our screen. It is a child class of
     the arcade library's "Sprite" class.
     """
+    # Fields of Enemy class
+    health = None
+    move_speed = 0
+
+
+    # Constructor
+    def __init__(self, image, scale):
+        super().__init__(image, scale)
 
     # Called to move the cow in the direction of the player
     def follow_sprite(self, player_sprite):
@@ -46,5 +59,23 @@ class Cow(arcade.Sprite):
             if x_diff <= 500 and y_diff <= 500:
                 # Taking into account the angle, calculate our change_x
                 # and change_y. Velocity is how fast the bullet travels.
-                self.change_x = math.cos(angle) * COW_SPEED
-                self.change_y = math.sin(angle) * COW_SPEED
+                self.change_x = math.cos(angle) * self.move_speed
+                self.change_y = math.sin(angle) * self.move_speed
+
+class Cow(Enemy):
+    health = 1
+    def __init__(self):
+        self.move_speed = COW_SPEED
+        super().__init__("images/cow.png", SPRITE_SCALING_COW)
+
+class Seal(Enemy):
+    health = 1
+    last_fire_time = 0
+    def __init__(self):
+        self.move_speed = SEAL_SPEED
+        super().__init__("images/seal.png", SPRITE_SCALING_SEAL)
+    
+    def fire_ball(self, player_location):
+        ball = projectiles.Seal_Projectile(player_location, self.position)
+        return ball
+    
