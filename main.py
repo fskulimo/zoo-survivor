@@ -265,6 +265,8 @@ class MyGame(arcade.Window):
         self.score = 0
         self.weapon_selected = None
         self.health = None
+        self.bombs_left = None
+        self.last_fire = None
 
         # Set up the key presses
         self.w_pressed = False
@@ -273,11 +275,15 @@ class MyGame(arcade.Window):
         self.d_pressed = False
         self.frames_since_direction_change = 0
 
+        # Set mouse location
         self.mouse_x = 0
         self.mouse_y = 0
 
         # Don't show the mouse cursor
         self.set_mouse_visible(True)
+
+        # Initalize timer
+        self.time = None
 
         arcade.set_background_color(arcade.color.AMAZON)
 
@@ -294,6 +300,8 @@ class MyGame(arcade.Window):
         self.score = 0
         self.weapon_selected = "Basic"
         self.health = STARTING_PLAYER_HEALTH
+        self.bombs_left = 2
+        self.last_fire = 0
 
         # Set up the player
         # Character image from kenney.nl
@@ -301,6 +309,8 @@ class MyGame(arcade.Window):
         self.player_sprite.center_x = 300
         self.player_sprite.center_y = 300
         self.player_list.append(self.player_sprite)
+
+        self.time = 0
 
         # Create the cows
         for i in range(COW_COUNT):
@@ -317,11 +327,13 @@ class MyGame(arcade.Window):
             
 
     def banana_bomb(self, start_position):
-        for angle in range(0, 12, 1):
-            start_x = start_position[0]
-            start_y = start_position[1]
-            projectile = Basic_Projectile("banana.png", SPRITE_SCALING_LARGE_BANANA, start_x + math.cos(angle/2), start_y + math.sin(angle/2), start_position)
-            self.projectile_list.append(projectile)
+        if self.bombs_left > 0:
+            self.bombs_left -= 1
+            for angle in range(0, 12, 1):
+                start_x = start_position[0]
+                start_y = start_position[1]
+                projectile = Basic_Projectile("banana.png", SPRITE_SCALING_LARGE_BANANA, start_x + math.cos(angle/2), start_y + math.sin(angle/2), start_position)
+                self.projectile_list.append(projectile)
 
     def on_draw(self):
         """ Draw everything """
@@ -359,6 +371,7 @@ class MyGame(arcade.Window):
 
 
     def on_update(self, delta_time):
+        self.time += delta_time
         """ Movement and game logic """
         self.player_list.update()
 
@@ -459,11 +472,15 @@ class MyGame(arcade.Window):
             self.update_player_speed()
         
         if key == arcade.key.SPACE:
-            if self.weapon_selected == "Basic":
+            weapon_delta_time = self.time - self.last_fire
+            if self.weapon_selected == "Basic" and weapon_delta_time > 0.3 :
                 projectile = Basic_Projectile("carrot.png", SPRITE_SCALING_CARROT, self.mouse_x, self.mouse_y, self.player_sprite.position)
-            elif self.weapon_selected == "Splinter":
+            elif self.weapon_selected == "Splinter" and weapon_delta_time > 1:
                 projectile = Splinter_Projectile("banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x, self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
             self.projectile_list.append(projectile)
+            
+            self.last_fire = self.time
+
 
         if key == arcade.key.P:
             self.banana_bomb(self.player_sprite.position)
