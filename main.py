@@ -273,7 +273,7 @@ class MyGame(arcade.Window):
         # Create the cows
         for i in range(COW_COUNT):
             # Create the cow instance
-            cow = Cow("cow.png", SPRITE_SCALING_COW)
+            cow = Cow("images/cow.png", SPRITE_SCALING_COW)
 
             # Position the cow
             cow.center_x = random.randrange(SCREEN_WIDTH)
@@ -290,7 +290,7 @@ class MyGame(arcade.Window):
             for angle in range(0, 12, 1):
                 start_x = start_position[0]
                 start_y = start_position[1]
-                projectile = Basic_Projectile("banana.png", SPRITE_SCALING_LARGE_BANANA, start_x + math.cos(angle/2), start_y + math.sin(angle/2), start_position)
+                projectile = Basic_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, start_x + math.cos(angle/2), start_y + math.sin(angle/2), start_position)
                 self.projectile_list.append(projectile)
 
     def on_draw(self):
@@ -368,7 +368,7 @@ class MyGame(arcade.Window):
                         target_x = projectile.center_x + random_x
                         target_y= projectile.center_y + random_y
 
-                        splinter_projectile = Splinter_Projectile("banana.png", SPRITE_SCALING_SMALL_BANANA, target_x, target_y, projectile.position, 0)
+                        splinter_projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_SMALL_BANANA, target_x, target_y, projectile.position, 0)
                         self.projectile_list.append(splinter_projectile)
 
         # Check for collisions between player and upgrade
@@ -391,7 +391,7 @@ class MyGame(arcade.Window):
 
         # Randomly generating Cows
         if random.randrange(50) == 0:
-            cow = Cow("cow.png", SPRITE_SCALING_COW)
+            cow = Cow("images/cow.png", SPRITE_SCALING_COW)
             cow.center_x = random.randrange(SCREEN_WIDTH)
             cow.center_y = random.randrange(SCREEN_HEIGHT)
             
@@ -403,10 +403,10 @@ class MyGame(arcade.Window):
         if random.randrange(700) == 0:
             upgrade_type = UPGRADE_TYPES[random.randrange(len(UPGRADE_TYPES))]
             if upgrade_type == "Splinter":
-                upgrade = Upgrade("banana_item.png", SPRITE_SCALING_LARGE_BANANA, "Splinter")
+                upgrade = Upgrade("images/banana_item.png", SPRITE_SCALING_LARGE_BANANA, "Splinter")
                 
             elif upgrade_type == "Basic":
-                upgrade = Upgrade("carrot_item.png", SPRITE_SCALING_CARROT, "Basic")
+                upgrade = Upgrade("images/carrot_item.png", SPRITE_SCALING_CARROT, "Basic")
             
             upgrade.center_x = random.randrange(SCREEN_WIDTH)
             upgrade.center_y = random.randrange(SCREEN_HEIGHT)
@@ -432,9 +432,9 @@ class MyGame(arcade.Window):
         if key == arcade.key.SPACE:
             weapon_delta_time = self.time - self.last_fire
             if self.weapon_selected == "Basic" and weapon_delta_time > 0.3 :
-                projectile = Basic_Projectile("carrot.png", SPRITE_SCALING_CARROT, self.mouse_x, self.mouse_y, self.player_sprite.position)
+                projectile = Basic_Projectile("images/carrot.png", SPRITE_SCALING_CARROT, self.mouse_x, self.mouse_y, self.player_sprite.position)
             elif self.weapon_selected == "Splinter" and weapon_delta_time > 1:
-                projectile = Splinter_Projectile("banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x, self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
+                projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x, self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
             self.projectile_list.append(projectile)
             
             self.last_fire = self.time
