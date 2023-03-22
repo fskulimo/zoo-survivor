@@ -51,7 +51,7 @@ SPLINTER_BOUNCES = 5
 RIGHT_FACING = 0
 LEFT_FACING = 1
 
-UPGRADE_TYPES = ["Basic", "Splinter"]
+UPGRADE_TYPES = ["Basic", "Splinter", "Rapid_Fire"]
 
 def load_texture_pair(filename):
     """
@@ -245,7 +245,7 @@ class MyGame(arcade.Window):
     
     def generate_enemies(self):
         # Randomly generating Cows
-        if random.randrange(100) == 0:
+        if random.randrange(60) == 0:
             cow = Cow()
             cow.center_x = random.randrange(SCREEN_WIDTH)
             cow.center_y = random.randrange(SCREEN_HEIGHT)
@@ -260,6 +260,13 @@ class MyGame(arcade.Window):
                 seal.center_x = random.randrange(SCREEN_WIDTH)
                 seal.center_y = random.randrange(SCREEN_HEIGHT)
                 self.enemy_list.append(seal)
+        
+        # Randomly generating Seals
+        if self.time > 20 and random.randrange(900) == 0:
+                bull = Bull()
+                bull.center_x = random.randrange(SCREEN_WIDTH)
+                bull.center_y = random.randrange(SCREEN_HEIGHT)
+                self.enemy_list.append(bull)
         
     def fire_seal_projectiles(self):
         for enemy in self.enemy_list:
@@ -359,17 +366,27 @@ class MyGame(arcade.Window):
         # Updating time and the player sprite
         self.time += delta_time
         self.player_list.update()
+        
 
         # Update the players animation
         self.player_list.update_animation()
 
         self.check_all_collisions()
-    
+
+        min_distance = 1000000
+        for enemy in self.enemy_list:
+            if distance(self.player_sprite.position, enemy.position) < min_distance:
+                min_distance = distance(self.player_sprite.position, enemy.position)
+        if  min_distance > 300 and self.health < 100:
+            self.health += 1
+
         for enemy in self.enemy_list:
             if type(enemy) is Cow:
                 enemy.follow_sprite(self.player_sprite)
             if type(enemy) is Seal:
                 enemy.follow_sprite(self.enemy_list[random.randrange(len(self.enemy_list))])
+            if type(enemy) is Bull:
+                enemy.charge(self.player_sprite)
 
   
         

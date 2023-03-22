@@ -5,9 +5,12 @@ import projectiles
 
 COW_SPEED = 0.8
 SEAL_SPEED = 0.2
+BULL_SPEED = 10
 
 SPRITE_SCALING_COW = 0.3
 SPRITE_SCALING_SEAL = 0.4
+SPRITE_SCALING_BULL = 0.4
+
 
 
 class Enemy(arcade.Sprite):
@@ -56,11 +59,11 @@ class Enemy(arcade.Sprite):
             y_diff = dest_y - start_y
             angle = math.atan2(y_diff, x_diff)
 
-            if x_diff <= 500 and y_diff <= 500:
+            # if x_diff <= 500 and y_diff <= 500:
                 # Taking into account the angle, calculate our change_x
                 # and change_y. Velocity is how fast the bullet travels.
-                self.change_x = math.cos(angle) * self.move_speed
-                self.change_y = math.sin(angle) * self.move_speed
+            self.change_x = math.cos(angle) * self.move_speed
+            self.change_y = math.sin(angle) * self.move_speed
 
 class Cow(Enemy):
     health = 1
@@ -79,3 +82,21 @@ class Seal(Enemy):
         ball = projectiles.Seal_Projectile(player_location, self.position)
         return ball
     
+class Bull(Enemy):
+    health = 3
+    charge_left = 0
+    charging = False
+    def __init__(self):
+        self.move_speed = BULL_SPEED
+        super().__init__("images/bull.png", SPRITE_SCALING_BULL)
+    
+    def charge(self, target_sprite):
+        if self.charge_left >= 200 and not self.charging:
+            self.charging = True
+        
+        if self.charge_left > 0 and self.charging:
+            self.follow_sprite(target_sprite)
+            self.charge_left -= 3
+        else:
+            self.charging = False
+            self.charge_left += 1
