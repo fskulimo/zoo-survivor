@@ -229,7 +229,7 @@ class MyGame(arcade.Window):
 
     def generate_upgrades(self):
         # Randomly generating upgrades
-        if random.randrange(700) == 0:
+        if random.randrange(700) == 0 and len(self.upgrade_list) < 2:
             upgrade_type = UPGRADE_TYPES[random.randrange(len(UPGRADE_TYPES))]
             if upgrade_type == "Splinter":
                 upgrade = Upgrade("images/banana_item.png", SPRITE_SCALING_LARGE_BANANA, "Splinter")
@@ -268,55 +268,9 @@ class MyGame(arcade.Window):
                 if time_since_fire > 4:
                     self.enemy_projectile_list.append(enemy.fire_ball(self.player_sprite.position))
                     enemy.last_fire_time = self.time
-    def on_draw(self):
-        """ Draw everything """
-        self.clear()            
-        self.enemy_list.draw()
-        self.player_list.draw()
-        self.projectile_list.draw()
-        self.upgrade_list.draw()
-        self.enemy_projectile_list.draw()
-
-        # Put the text on the screen.
-        output = f"Score: {self.score}"
-        arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
-        arcade.draw_text("Weapon Selected: " + self.weapon_selected, 550,20, arcade.color.WHITE, 14)
-        arcade.draw_text("Health: " + self.health.__str__(), 10, 550, arcade.color.RED, 14)
-
-        # Basic loss condition. TODO do this with scenes instead
-        if self.health <= 0:
-            self.clear()
-            arcade.draw_text("YOU LOSE", 300, 300, arcade.color.RED, 30)
-
-    def update_player_speed(self):
-        self.player_sprite.change_x = 0
-        self.player_sprite.change_y = 0
-
-        if self.w_pressed and not self.s_pressed:
-            self.player_sprite.change_y += PLAYER_SPEED
-        elif self.s_pressed and not self.w_pressed:
-            self.player_sprite.change_y += -PLAYER_SPEED
-        if self.a_pressed and not self.d_pressed:
-            self.player_sprite.change_x += -PLAYER_SPEED
-        elif self.d_pressed and not self.a_pressed:
-            self.player_sprite.change_x += PLAYER_SPEED
-
-
-    def on_update(self, delta_time):
-        # Updating time and the player sprite
-        self.time += delta_time
-        self.player_list.update()
-
-        # Update the players animation
-        self.player_list.update_animation()
     
-        for enemy in self.enemy_list:
-            if type(enemy) is Cow:
-                enemy.follow_sprite(self.player_sprite)
-            if type(enemy) is Seal:
-                enemy.follow_sprite(self.enemy_list[random.randrange(len(self.enemy_list))])
-
-        # Checking sprite collisions
+    def check_all_collisions(self):
+              # Checking sprite collisions
         hit_list = arcade.SpriteList()
         # Checking if a projectile hit a cow
         for cow in self.enemy_list:
@@ -367,6 +321,57 @@ class MyGame(arcade.Window):
             if enemy.health <= 0:
                 enemy.kill()
                 self.score += 1
+    def on_draw(self):
+        """ Draw everything """
+        self.clear()            
+        self.enemy_list.draw()
+        self.player_list.draw()
+        self.projectile_list.draw()
+        self.upgrade_list.draw()
+        self.enemy_projectile_list.draw()
+
+        # Put the text on the screen.
+        output = f"Score: {self.score}"
+        arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
+        arcade.draw_text("Weapon Selected: " + self.weapon_selected, 550,20, arcade.color.WHITE, 14)
+        arcade.draw_text("Health: " + self.health.__str__(), 10, 550, arcade.color.RED, 14)
+
+        # Basic loss condition. TODO do this with scenes instead
+        if self.health <= 0:
+            self.clear()
+            arcade.draw_text("YOU LOSE", 300, 300, arcade.color.RED, 30)
+
+    def update_player_speed(self):
+        self.player_sprite.change_x = 0
+        self.player_sprite.change_y = 0
+
+        if self.w_pressed and not self.s_pressed:
+            self.player_sprite.change_y += PLAYER_SPEED
+        elif self.s_pressed and not self.w_pressed:
+            self.player_sprite.change_y += -PLAYER_SPEED
+        if self.a_pressed and not self.d_pressed:
+            self.player_sprite.change_x += -PLAYER_SPEED
+        elif self.d_pressed and not self.a_pressed:
+            self.player_sprite.change_x += PLAYER_SPEED
+
+
+    def on_update(self, delta_time):
+        # Updating time and the player sprite
+        self.time += delta_time
+        self.player_list.update()
+
+        # Update the players animation
+        self.player_list.update_animation()
+
+        self.check_all_collisions()
+    
+        for enemy in self.enemy_list:
+            if type(enemy) is Cow:
+                enemy.follow_sprite(self.player_sprite)
+            if type(enemy) is Seal:
+                enemy.follow_sprite(self.enemy_list[random.randrange(len(self.enemy_list))])
+
+  
         
         # Making every projectile move towards target
         for projectile in self.projectile_list:
