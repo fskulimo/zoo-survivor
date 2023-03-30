@@ -18,6 +18,7 @@ import arcade
 import math
 import os
 from pygame import mixer
+import pygame
 
 from enemies import *
 from projectiles import *
@@ -176,8 +177,12 @@ class MyGame(arcade.Window):
 
         # Initialize sound
         mixer.init()
+        pygame.mixer.init()
 
         arcade.set_background_color(arcade.color.AMAZON)
+
+        # Plays music
+        pygame.mixer.Channel(1).play(pygame.mixer.Sound('Game Track.mp3'), loops=-1)
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -188,7 +193,6 @@ class MyGame(arcade.Window):
         self.projectile_list = arcade.SpriteList()
         self.upgrade_list = arcade.SpriteList()
         self.enemy_projectile_list = arcade.SpriteList()
-
 
         # Score
         self.score = 0
@@ -323,8 +327,6 @@ class MyGame(arcade.Window):
                 self.weapon_selected = upgrade.type
                 upgrade.kill()
 
-
-
         # Loop through each colliding sprite, remove it, and add to the score.
         for enemy in hit_list:
             if enemy.health <= 0:
@@ -369,7 +371,6 @@ class MyGame(arcade.Window):
         self.time += delta_time
         self.player_list.update()
 
-
         # Update the players animation
         self.player_list.update_animation()
 
@@ -407,7 +408,6 @@ class MyGame(arcade.Window):
 
         self.fire_seal_projectiles()
 
-
     def on_key_press(self, key, modifiers):
 
         if key == arcade.key.W:
@@ -427,17 +427,15 @@ class MyGame(arcade.Window):
             weapon_delta_time = self.time - self.last_fire
             if self.weapon_selected == "Basic" and weapon_delta_time > 0.3 :
                 projectile = Basic_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
-                mixer.music.load("pop.mp3")
-                mixer.music.set_volume(0.7)
-                mixer.music.play()
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound('pop.mp3'))
             elif self.weapon_selected == "Splinter" and weapon_delta_time > 1:
                 projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x, self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
-                mixer.music.load("throw.mp3")
-                mixer.music.set_volume(0.7)
-                mixer.music.play()
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound('throw.mp3'))
             self.projectile_list.append(projectile)
             self.last_fire = self.time
 
+        if key == arcade.key.M:
+            pygame.mixer.Channel(1).pause()
 
         if key == arcade.key.P:
             self.banana_bomb(self.player_sprite.position)
@@ -451,7 +449,6 @@ class MyGame(arcade.Window):
             arcade.exit()
 
     def on_mouse_motion(self, x, y, dx, dy):
-
         self.mouse_x = x
         self.mouse_y = y
 
