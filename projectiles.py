@@ -6,6 +6,7 @@ from pygame import mixer
 
 BASIC_PROJECTILE_SPEED = 4
 SEAL_PROJECTILE_SPEED = 5
+BOOMERANG_PROJECTILE_SPEED = 8
 SPRITE_SCALING_CARROT = 0.05
 
 class Basic_Projectile(arcade.Sprite):
@@ -104,3 +105,60 @@ class Seal_Projectile(arcade.Sprite):
 
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+class Boomerang_Projectile(arcade.Sprite):
+    target_x = None
+    target_y = None
+
+
+    player_location = (0,0)
+    time_left = None
+    image = "images/yoyo.png"
+    scale = 0.1
+
+    def __init__(self, target_x, target_y, player_location):
+        super().__init__(self.image, self.scale)
+        self.position = player_location
+        self.target_x = target_x
+        self.target_y = target_y
+        self.player_location = player_location
+        self.time_left = 50
+    
+    def move(self):
+        player_x = self.player_location[0]
+        player_y = self.player_location[1]
+            
+        if self.time_left > 0:    
+            delta_x = self.target_x - player_x
+            delta_y = self.target_y - player_y
+
+            magnitude = abs(sqrt((delta_x * delta_x) + (delta_y * delta_y)))
+
+            unit_x = delta_x / magnitude
+            unit_y = delta_y / magnitude
+
+            self.change_x = unit_x * BASIC_PROJECTILE_SPEED
+            self.change_y = unit_y * BASIC_PROJECTILE_SPEED
+            
+            self.center_x += self.change_x
+            self.center_y += self.change_y
+        
+        else:
+            delta_x = self.position[0] - player_x
+            delta_y = self.position[1] - player_y
+
+            magnitude = abs(sqrt((delta_x * delta_x) + (delta_y * delta_y)))
+
+            if magnitude > 0:
+                unit_x = delta_x / magnitude
+                unit_y = delta_y / magnitude
+
+                self.change_x = unit_x * BOOMERANG_PROJECTILE_SPEED
+                self.change_y = unit_y * BOOMERANG_PROJECTILE_SPEED
+                    
+                self.center_x -= self.change_x
+                self.center_y -= self.change_y
+                
+            
+        self.time_left -= 1
+

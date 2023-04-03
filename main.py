@@ -29,7 +29,7 @@ SPRITE_SCALING_PLAYER = 0.8
 SPRITE_SCALING_COW = 0.3
 SPRITE_SCALING_LARGE_BANANA = 0.15
 SPRITE_SCALING_SMALL_BANANA = 0.05
-SPRITE_SCALING_WEAPON = 0.15
+SPRITE_SCALING_WEAPON = 0.2
 
 # Starting number of cows
 COW_COUNT = 5
@@ -54,7 +54,7 @@ SPLINTER_BOUNCES = 5
 RIGHT_FACING = 0
 LEFT_FACING = 1
 
-UPGRADE_TYPES = ["Basic", "Splinter", "Rapid_Fire"]
+UPGRADE_TYPES = ["Basic", "Splinter", "Boomerang"]
 
 WEAPON_EQUIPPED_TEXTURES = {
     "Basic": "images/carrot_gun.png",
@@ -94,7 +94,7 @@ class PlayerCharacter(arcade.Sprite):
         # Damage Timer/Cooldown for Player
         self.vulnerable = True
         self.hurt_time = None
-        self.invulnerability_duration = 0.4
+        self.invulnerability_duration = 0.1
         self.health = STARTING_PLAYER_HEALTH
 
         # Initialize flicker variables
@@ -142,7 +142,7 @@ class PlayerCharacter(arcade.Sprite):
             if self.health <= 0:
                 self.kill()
             # Spawn Particles
-
+        
     def update_animation(self, delta_time: float = 1 / 60):
 
         if self.change_x < 0 and (self.character_face_direction == "right" or self.character_face_direction == "down"
@@ -346,7 +346,7 @@ class MyGame(arcade.Window):
 
         # Score
         self.score = 0
-        self.weapon_selected = "Basic"
+        self.weapon_selected = "Boomerang"
         # self.health = STARTING_PLAYER_HEALTH
         self.bombs_left = 2
         self.last_fire = 0
@@ -396,6 +396,9 @@ class MyGame(arcade.Window):
 
             elif upgrade_type == "Basic":
                 upgrade = Upgrade("images/carrot_item.png", SPRITE_SCALING_CARROT, "Basic")
+            elif upgrade_type == "Boomerang":
+                upgrade = Upgrade("images/yoyo_upgrade.png", 0.1, "Boomerang")
+
 
             if upgrade:  # check if upgrade has a value
                 upgrade.center_x = random.randrange(SCREEN_WIDTH)
@@ -453,21 +456,23 @@ class MyGame(arcade.Window):
         # Checking sprite collisions
         hit_list = arcade.SpriteList()
         # Checking if a projectile hit a cow
-        for cow in self.enemy_list:
-            if len(arcade.check_for_collision_with_list(cow, self.projectile_list)) > 0:
-                hit_list.append(cow)
-                cow.health -= 1
+        for enemy in self.enemy_list:
+            if len(arcade.check_for_collision_with_list(enemy, self.projectile_list)) > 0:
+                hit_list.append(enemy)
+                enemy.health -= 1
         # Checking if a player has been hit by an enemy
         player_hit = len(arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)) > 0
         if player_hit and self.player_sprite.health > 0:
-            self.player_sprite.damage_player(1)
+            self.player_sprite.damage_player(3)
+            arcade.set_background_color(arcade.color.PINK)
         else:
             arcade.set_background_color(arcade.color.AMAZON)
 
         # Checking for projectile collisions and deleting the projectiles if they have collided
         for projectile in self.projectile_list:
             if len(arcade.check_for_collision_with_list(projectile, hit_list)) > 0:
-                projectile.kill()
+                if type(projectile) is not Boomerang_Projectile:
+                    projectile.kill()
 
                 # Special case with the splinter projectile -> creates more moving in random directions
                 if type(projectile) is Splinter_Projectile:
@@ -481,10 +486,17 @@ class MyGame(arcade.Window):
                         splinter_projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_SMALL_BANANA,
                                                                   target_x, target_y, projectile.position, 0)
                         self.projectile_list.append(splinter_projectile)
+            
+            if type(projectile) is Boomerang_Projectile:
+                projectile.player_location = self.player_sprite.position
+                if arcade.check_for_collision(projectile, self.player_sprite) and projectile.time_left <= 0:
+                    projectile.kill()
+        
         for projectile in self.enemy_projectile_list:
             if len(arcade.check_for_collision_with_list(projectile, self.player_list)) > 0:
                 self.player_sprite.damage_player(10)
                 projectile.kill()
+                
 
         # Check for collisions between player and upgrade
         for upgrade in self.upgrade_list:
@@ -583,7 +595,7 @@ class MyGame(arcade.Window):
         for enemy in self.enemy_list:
             if distance(self.player_sprite.position, enemy.position) < min_distance:
                 min_distance = distance(self.player_sprite.position, enemy.position)
-        if min_distance > 300 and self.player_sprite.health < 100:
+        if min_distance > 300 and self.player_sprite.health < 70:
             self.player_sprite.health += 1
 
         for enemy in self.enemy_list:
@@ -629,10 +641,12 @@ class MyGame(arcade.Window):
             if self.weapon_selected == "Basic" and weapon_delta_time > 0.3:
                 projectile = Basic_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
                 pygame.mixer.Channel(0).play(pygame.mixer.Sound('pop.mp3'))
-            elif self.weapon_selected == "Splinter" and weapon_delta_time > 1:
+            elif self.weapon_selected == "Splinter" and weapon_delta_time > 2:
                 projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x,
                                                  self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
                 pygame.mixer.Channel(0).play(pygame.mixer.Sound('throw.mp3'))
+            elif self.weapon_selected == "Boomerang" and weapon_delta_time > 0.7:
+                projectile = Boomerang_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
             self.projectile_list.append(projectile)
             self.last_fire = self.time
 
