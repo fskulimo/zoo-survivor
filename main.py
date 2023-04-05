@@ -20,6 +20,7 @@ import math
 import os
 from pygame import mixer
 import pygame
+import math
 
 from enemies import *
 from projectiles import *
@@ -539,13 +540,37 @@ class MyGame(arcade.Window):
         self.weapon_sprite.change_x = 0
         self.weapon_sprite.change_y = 0
 
+        # Multiple cases to prevent diagonal movement from being faster than up/down/left/right movement
+        # Speeds are reduced for diagonal movement by 1/sqrt(2) for each axis per the pythagorean theorem.
         if self.w_pressed and not self.s_pressed:
-            self.player_sprite.change_y += PLAYER_SPEED
-            self.weapon_sprite.change_y += PLAYER_SPEED
+            if self.w_pressed and self.a_pressed:
+                self.player_sprite.change_y += (1/sqrt(2)) * PLAYER_SPEED
+                self.weapon_sprite.change_y += (1/sqrt(2)) * PLAYER_SPEED
+                self.player_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
+                self.weapon_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
+            elif self.w_pressed and self.d_pressed:
+                self.player_sprite.change_y += (1 / sqrt(2)) * PLAYER_SPEED
+                self.weapon_sprite.change_y += (1 / sqrt(2)) * PLAYER_SPEED
+                self.player_sprite.change_x += (1 / sqrt(2)) * PLAYER_SPEED
+                self.weapon_sprite.change_x += (1 / sqrt(2)) * PLAYER_SPEED
+            else:
+                self.player_sprite.change_y += PLAYER_SPEED
+                self.weapon_sprite.change_y += PLAYER_SPEED
         elif self.s_pressed and not self.w_pressed:
-            self.player_sprite.change_y += -PLAYER_SPEED
-            self.weapon_sprite.change_y += -PLAYER_SPEED
-        if self.a_pressed and not self.d_pressed:
+            if self.s_pressed and self.a_pressed:
+                self.player_sprite.change_y += (1/sqrt(2)) * -PLAYER_SPEED
+                self.weapon_sprite.change_y += (1/sqrt(2)) * -PLAYER_SPEED
+                self.player_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
+                self.weapon_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
+            elif self.s_pressed and self.d_pressed:
+                self.player_sprite.change_y += (1 / sqrt(2)) * -PLAYER_SPEED
+                self.weapon_sprite.change_y += (1 / sqrt(2)) * -PLAYER_SPEED
+                self.player_sprite.change_x += (1 / sqrt(2)) * PLAYER_SPEED
+                self.weapon_sprite.change_x += (1 / sqrt(2)) * PLAYER_SPEED
+            else:
+                self.player_sprite.change_y += -PLAYER_SPEED
+                self.weapon_sprite.change_y += -PLAYER_SPEED
+        elif self.a_pressed and not self.d_pressed:
             self.player_sprite.change_x += -PLAYER_SPEED
             self.weapon_sprite.change_x += -PLAYER_SPEED
         elif self.d_pressed and not self.a_pressed:
