@@ -3,6 +3,7 @@ import arcade
 import math
 from math import sqrt
 from pygame import mixer
+import pygame
 
 BASIC_PROJECTILE_SPEED = 4
 SEAL_PROJECTILE_SPEED = 5

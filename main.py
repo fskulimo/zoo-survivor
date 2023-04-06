@@ -659,6 +659,7 @@ class MyGame(arcade.Window):
                 pygame.mixer.Channel(0).play(pygame.mixer.Sound('throw.mp3'))
             elif self.weapon_selected == "Boomerang" and weapon_delta_time > 0.7:
                 projectile = Boomerang_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound('boomerang.wav'))
             self.projectile_list.append(projectile)
             self.last_fire = self.time
 

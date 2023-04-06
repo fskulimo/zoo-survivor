@@ -2,6 +2,8 @@ import random
 import arcade
 import math
 import projectiles
+from pygame import mixer
+import pygame
 
 COW_SPEED = 0.8
 SEAL_SPEED = 0.2
@@ -80,6 +82,7 @@ class Seal(Enemy):
     
     def fire_ball(self, player_location):
         ball = projectiles.Seal_Projectile(player_location, self.position)
+        pygame.mixer.Channel(0).play(pygame.mixer.Sound('beachball.mp3'))
         return ball
     
 class Bull(Enemy):
@@ -92,6 +95,7 @@ class Bull(Enemy):
     
     def charge(self, target_sprite):
         if self.charge_left >= 200 and not self.charging:
+            pygame.mixer.Channel(1).play(pygame.mixer.Sound('bull_charge.mp3'))
             self.charging = True
         
         if self.charge_left > 0 and self.charging:
