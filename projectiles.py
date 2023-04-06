@@ -115,7 +115,7 @@ class Boomerang_Projectile(arcade.Sprite):
     player_location = (0,0)
     time_left = None
     image = "images/yoyo.png"
-    scale = 0.1
+    scale = 0.16
 
     def __init__(self, target_x, target_y, player_location):
         super().__init__(self.image, self.scale)

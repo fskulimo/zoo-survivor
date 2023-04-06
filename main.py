@@ -17,7 +17,7 @@ SPRITE_SCALING_PLAYER = 0.8
 SPRITE_SCALING_COW = 0.3
 SPRITE_SCALING_LARGE_BANANA = 0.15
 SPRITE_SCALING_SMALL_BANANA = 0.05
-SPRITE_SCALING_WEAPON = 0.2
+SPRITE_SCALING_WEAPON = 0.15
 
 # Starting number of cows
 COW_COUNT = 5
@@ -30,7 +30,7 @@ SCREEN_TITLE = "CS 205 Final Project"
 # Speed Constants
 SPRITE_SPEED = 3
 PLAYER_SPEED = 5
-UPDATES_PER_FRAME = 8
+UPDATES_PER_FRAME = 7
 
 # Player stats constants
 STARTING_PLAYER_HEALTH = 100
@@ -42,12 +42,28 @@ SPLINTER_BOUNCES = 5
 RIGHT_FACING = 0
 LEFT_FACING = 1
 
+# UI CONSTANTS
+HEALTH_BAR_LEFT = 10
+HEALTH_BAR_RIGHT = 150
+HEALTH_BAR_TOP = 580
+HEALTH_BAR_BOTTOM = 565
+WEAPON_BOX_SIZE = 75
+UI_FONT = 'fonts/joystix.ttf'
+UI_FONT_SIZE = 18
+
+# UI colors
+UI_BG_COLOR = arcade.color.BLACK
+UI_BORDER_COLOR = arcade.color.BLACK
+HEALTH_COLOR = arcade.color.RED
+UI_BORDER_COLOR_ACTIVE = arcade.color.TUSCAN_BROWN
+TEXT_COLOR = arcade.color.WHEAT
+
 UPGRADE_TYPES = ["Basic", "Splinter", "Boomerang"]
 
 WEAPON_EQUIPPED_TEXTURES = {
     "Basic": "images/carrot_gun.png",
     "Splinter": "images/banana_gun.png",
-    "Rapid_Fire": "images/banana_gun.png"
+    "Boomerang": "images/yoyo.png"
 }
 
 
@@ -82,7 +98,7 @@ class PlayerCharacter(arcade.Sprite):
         # Damage Timer/Cooldown for Player
         self.vulnerable = True
         self.hurt_time = None
-        self.invulnerability_duration = 0.1
+        self.invulnerability_duration = 0.2
         self.health = STARTING_PLAYER_HEALTH
 
         # Initialize flicker variables
@@ -290,8 +306,8 @@ class MyGame(arcade.Window):
         self.player_sprite = None
         self.score = 0
         self.weapon_selected = None
+        self.weapon_index = 0
         self.weapon_sprite = None
-        # self.health = None
         self.bombs_left = None
         self.last_fire = None
 
@@ -309,6 +325,10 @@ class MyGame(arcade.Window):
         # Don't show the mouse cursor
         self.set_mouse_visible(True)
 
+        # Set up the UI
+        self.font = arcade.load_font(UI_FONT)
+        self.weapon_graphics = None
+
         # Initalize timer
         self.time = None
 
@@ -319,7 +339,7 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.AMAZON)
 
         # Plays music
-        pygame.mixer.Channel(10).play(pygame.mixer.Sound('Game Track.mp3'), loops=-1)
+        pygame.mixer.Channel(1).play(pygame.mixer.Sound('Game Track.mp3'), loops=-1)
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -334,13 +354,11 @@ class MyGame(arcade.Window):
 
         # Score
         self.score = 0
-        self.weapon_selected = "Boomerang"
-        # self.health = STARTING_PLAYER_HEALTH
+        self.weapon_selected = "Basic"
         self.bombs_left = 2
         self.last_fire = 0
 
         # Set up the player
-        # Character image from kenney.nl
         self.player_sprite = PlayerCharacter()
         self.player_sprite.center_x = 300
         self.player_sprite.center_y = 300
@@ -351,6 +369,13 @@ class MyGame(arcade.Window):
         self.weapon_list.append(self.weapon_sprite)
 
         self.time = 0
+
+        # convert weapon dictionary into list
+        self.weapon_graphics = []
+        for weapon in WEAPON_EQUIPPED_TEXTURES:
+            path = WEAPON_EQUIPPED_TEXTURES[weapon]
+            weapon = arcade.load_texture(path)
+            self.weapon_graphics.append(weapon)
 
         # Create the cows
         for i in range(COW_COUNT):
@@ -381,11 +406,10 @@ class MyGame(arcade.Window):
             upgrade_type = UPGRADE_TYPES[random.randrange(len(UPGRADE_TYPES))]
             if upgrade_type == "Splinter":
                 upgrade = Upgrade("images/banana_item.png", SPRITE_SCALING_LARGE_BANANA, "Splinter")
-
             elif upgrade_type == "Basic":
                 upgrade = Upgrade("images/carrot_item.png", SPRITE_SCALING_CARROT, "Basic")
             elif upgrade_type == "Boomerang":
-                upgrade = Upgrade("images/yoyo_upgrade.png", 0.1, "Boomerang")
+                upgrade = Upgrade("images/yoyo_upgrade.png", 0.15, "Boomerang")
 
 
             if upgrade:  # check if upgrade has a value
@@ -452,7 +476,7 @@ class MyGame(arcade.Window):
         player_hit = len(arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)) > 0
         if player_hit and self.player_sprite.health > 0:
             self.player_sprite.damage_player(3)
-            arcade.set_background_color(arcade.color.PINK)
+            arcade.set_background_color(arcade.color.RUBY)
         else:
             arcade.set_background_color(arcade.color.AMAZON)
 
@@ -490,6 +514,12 @@ class MyGame(arcade.Window):
         for upgrade in self.upgrade_list:
             if arcade.check_for_collision(upgrade, self.player_sprite):
                 self.weapon_selected = upgrade.type
+                if self.weapon_selected == "Splinter":
+                    self.weapon_index = 1
+                elif self.weapon_selected == "Boomerang":
+                    self.weapon_index = 2
+                else:
+                    self.weapon_index = 0
                 upgrade.kill()
 
         # Loop through each colliding sprite, remove it, and add to the score.
@@ -497,6 +527,48 @@ class MyGame(arcade.Window):
             if enemy.health <= 0:
                 enemy.kill()
                 self.score += 1
+
+        # UI Functions
+
+    def show_health_bar(self, current, max_amount, color):
+        # draw bg
+        arcade.draw_lrtb_rectangle_filled(HEALTH_BAR_LEFT, HEALTH_BAR_RIGHT,
+                                          HEALTH_BAR_TOP, HEALTH_BAR_BOTTOM, UI_BG_COLOR)
+
+        # converting stat to pixel
+        health_bar_width = HEALTH_BAR_RIGHT - HEALTH_BAR_LEFT
+        ratio = current / max_amount
+        current_width = health_bar_width * ratio
+        updated_bar_right = current_width + HEALTH_BAR_LEFT
+
+        # drawing the bar
+        arcade.draw_lrtb_rectangle_filled(HEALTH_BAR_LEFT, updated_bar_right, HEALTH_BAR_TOP, HEALTH_BAR_BOTTOM,
+                                          color)
+        arcade.draw_lrtb_rectangle_outline(10, updated_bar_right, HEALTH_BAR_TOP - 1, HEALTH_BAR_BOTTOM + 1,
+                                           UI_BORDER_COLOR, 3)
+
+    def show_score(self, score):
+        text_surf = f"Score: {score}"
+        x = SCREEN_WIDTH - 200
+        y = 20
+        text_rect = arcade.draw_text(text_surf, x, y, TEXT_COLOR, anchor_x="right", anchor_y="bottom",
+                                     font_size=UI_FONT_SIZE, font_name=self.font, align="right", bold=False,
+                                     italic=False, width=10)
+
+        # arcade.draw_lrtb_rectangle_filled(10 / 2 + x, text_rect.height / 2 + y, text_rect.width + 20,
+        #                                text_rect.height + 20, UI_BG_COLOR)
+        # arcade.draw_text(text_surf, x, y, TEXT_COLOR)
+        # arcade.draw_lrtb_rectangle_outline(text_rect.width / 2 + x, text_rect.height / 2 + y, text_rect.width + 20,
+        #                                 text_rect.height + 20, UI_BORDER_COLOR, 3)
+
+    def selection_box(self, x, y):
+        arcade.draw_rectangle_filled(x, y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, UI_BG_COLOR)
+        arcade.draw_rectangle_outline(x, y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, UI_BORDER_COLOR_ACTIVE)
+
+    def weapon_overlay(self, center_x, center_y, weapon_index):
+        self.selection_box(center_x, center_y)
+        weapon_img = self.weapon_graphics[weapon_index]
+        arcade.draw_texture_rectangle(center_x, center_y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, weapon_img)
 
     def on_draw(self):
         """ Draw everything """
@@ -508,11 +580,16 @@ class MyGame(arcade.Window):
         self.enemy_projectile_list.draw()
         self.weapon_list.draw()
 
+        # Draw UI
+        self.show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
+        # self.show_score(self.score)
+        self.weapon_overlay(45, 45, self.weapon_index)
+
         # Put the text on the screen.
         output = f"Score: {self.score}"
-        arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
-        arcade.draw_text("Weapon Selected: " + self.weapon_selected, 550, 20, arcade.color.WHITE, 14)
-        arcade.draw_text("Health: " + self.player_sprite.health.__str__(), 10, 550, arcade.color.RED, 14)
+        arcade.draw_text(output, 10, 90, arcade.color.WHITE, 13)
+        # arcade.draw_text("Weapon Selected: " + self.weapon_selected, 550, 20, arcade.color.WHITE, 14)
+        arcade.draw_text("Health: " + self.player_sprite.health.__str__(), 10, 550, arcade.color.RED, 12)
 
         # Basic loss condition. TODO do this with scenes instead
         if self.player_sprite.health <= 0:
@@ -586,6 +663,8 @@ class MyGame(arcade.Window):
                 self.weapon_sprite.weapon_textures_LR = [load_texture_pair(WEAPON_EQUIPPED_TEXTURES["Basic"])]
             elif upgrade.type == "Splinter":
                 self.weapon_sprite.weapon_textures_LR = [load_texture_pair(WEAPON_EQUIPPED_TEXTURES["Splinter"])]
+            elif upgrade.type == "Boomerang":
+                self.weapon_sprite.weapon_textures_LR = [load_texture_pair(WEAPON_EQUIPPED_TEXTURES["Boomerang"])]
 
         self.cooldowns()
         self.check_all_collisions()
