@@ -1,16 +1,3 @@
-"""
-Sprite Follow Player 2
-
-This calculates a 'vector' towards the player and randomly updates it based
-on the player's location. This is a bit more complex, but more interesting
-way of following the player.
-
-Artwork from https://kenney.nl
-
-If Python and Arcade are installed, this example can be run from the command line with:
-python -m arcade.examples.sprite_follow_simple_2
-"""
-
 from cmath import sin, sqrt
 import time
 from helper_functions import distance
@@ -38,7 +25,7 @@ COW_COUNT = 5
 # GUI Values
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-SCREEN_TITLE = "Sprite Follow Player Simple Example 2"
+SCREEN_TITLE = "CS 205 Final Project"
 
 # Speed Constants
 SPRITE_SPEED = 3
