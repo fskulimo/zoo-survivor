@@ -75,6 +75,8 @@ class Splinter_Projectile(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
+        
+
 class Seal_Projectile(arcade.Sprite):
     target_x = None
     target_y = None
