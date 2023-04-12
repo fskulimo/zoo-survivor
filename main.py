@@ -361,7 +361,7 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.AMAZON)
 
         # Plays music
-        pygame.mixer.Channel(1).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
+        pygame.mixer.Channel(6).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
 
     def setup(self):
         """ Set up the game and initialize the variables. """
