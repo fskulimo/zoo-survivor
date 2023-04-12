@@ -146,6 +146,28 @@ class PlayerCharacter(arcade.Sprite):
             if self.health <= 0:
                 self.kill()
             # Spawn Particles
+
+            # Hurt sounds, randomly generated
+            randint = random.randint(1, 9)
+            pygame.mixer.Channel(3).set_volume(0.2)
+            if randint == 1:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt1.mp3'))
+            elif randint == 2:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt2.mp3'))
+            elif randint == 3:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt3.mp3'))
+            elif randint == 4:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt4.mp3'))
+            elif randint == 5:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt5.mp3'))
+            elif randint == 6:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt6.mp3'))
+            elif randint == 7:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt7.mp3'))
+            elif randint == 8:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt8.mp3'))
+            elif randint == 9:
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt9.mp3'))
         
     def update_animation(self, delta_time: float = 1 / 60):
 
@@ -339,7 +361,7 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.AMAZON)
 
         # Plays music
-        pygame.mixer.Channel(1).play(pygame.mixer.Sound('Game Track.mp3'), loops=-1)
+        pygame.mixer.Channel(1).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -731,14 +753,14 @@ class MyGame(arcade.Window):
             weapon_delta_time = self.time - self.last_fire
             if self.weapon_selected == "Basic" and weapon_delta_time > 0.3:
                 projectile = Basic_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
-                pygame.mixer.Channel(0).play(pygame.mixer.Sound('pop.mp3'))
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/pop.mp3'))
             elif self.weapon_selected == "Splinter" and weapon_delta_time > 2:
                 projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x,
                                                  self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
-                pygame.mixer.Channel(0).play(pygame.mixer.Sound('throw.mp3'))
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/throw.mp3'))
             elif self.weapon_selected == "Boomerang" and weapon_delta_time > 0.7:
                 projectile = Boomerang_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
-                pygame.mixer.Channel(0).play(pygame.mixer.Sound('boomerang.wav'))
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/boomerang.wav'))
             self.projectile_list.append(projectile)
             self.last_fire = self.time
 
