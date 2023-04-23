@@ -2,7 +2,6 @@ import random
 import arcade
 import math
 import projectiles
-from pygame import mixer
 import pygame
 
 COW_SPEED = 0.8
