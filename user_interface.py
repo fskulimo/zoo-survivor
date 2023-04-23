@@ -20,9 +20,6 @@ HEALTH_COLOR = arcade.color.RED
 UI_BORDER_COLOR_ACTIVE = arcade.color.TUSCAN_BROWN
 TEXT_COLOR = arcade.color.WHEAT
 
-import arcade
-
-
 def show_health_bar(current, max_amount, color):
     # draw bg
     arcade.draw_lrtb_rectangle_filled(HEALTH_BAR_LEFT, HEALTH_BAR_RIGHT,
