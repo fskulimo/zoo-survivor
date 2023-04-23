@@ -764,7 +764,10 @@ class MyGame(arcade.Window):
             self.update_player_speed()
 
 def main():
-    """ Main function """
+
+    # Short delay added to give brief time for initialization, sometimes keyboard inputs don't work without this
+    time.sleep(0.05)
+
     window = MyGame()
     window.setup()
     arcade.run()
