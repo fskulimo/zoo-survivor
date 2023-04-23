@@ -370,7 +370,6 @@ class MyGame(arcade.Window):
 
     def setup(self):
         """ Set up the game and initialize the variables. """
-
         # Sprite lists
         self.player_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
@@ -620,6 +619,7 @@ class MyGame(arcade.Window):
         arcade.draw_texture_rectangle(center_x, center_y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, weapon_img)
 
     def on_draw(self):
+
         """ Draw everything """
         self.clear()
         self.enemy_list.draw()
@@ -629,6 +629,7 @@ class MyGame(arcade.Window):
         self.enemy_projectile_list.draw()
         self.weapon_list.draw()
         self.wall_list.draw()
+
 
         # Draw UI
         self.show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
@@ -795,8 +796,10 @@ class MyGame(arcade.Window):
             self.projectile_list.append(projectile)
             self.last_fire = self.time
 
+        if key == arcade.key.N:
+            pygame.mixer.Channel(6).pause()
         if key == arcade.key.M:
-            pygame.mixer.Channel(1).pause()
+            pygame.mixer.Channel(6).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
 
         if key == arcade.key.P:
             self.banana_bomb(self.player_sprite.position)
