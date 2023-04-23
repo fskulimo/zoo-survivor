@@ -5,7 +5,9 @@ For this project we created an endless top-down survival game. The only goal is 
 Use standard WASD controls to move your character. Move your cursor and press spacebar to fire a projectile in the direction of your cursor. You can pick up different weapons along the way to fight against the endless horde of animals.
 
 Press 'P' to get out of sticky situations, but you only have two uses!
+
 Press 'N' to stop the music, and press 'M' to stop/restart the music
+
 Press 'esc' to quit the game
 
 ## To Run
