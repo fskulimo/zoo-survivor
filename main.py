@@ -18,6 +18,7 @@ SPRITE_SCALING_COW = 0.3
 SPRITE_SCALING_LARGE_BANANA = 0.15
 SPRITE_SCALING_SMALL_BANANA = 0.05
 SPRITE_SCALING_WEAPON = 0.15
+SPRITE_SCALING_WALL = 0.5
 
 # Starting number of cows
 COW_COUNT = 5
@@ -29,7 +30,7 @@ SCREEN_TITLE = "CS 205 Final Project"
 
 # Speed Constants
 SPRITE_SPEED = 3
-PLAYER_SPEED = 5
+PLAYER_SPEED = 2.2
 UPDATES_PER_FRAME = 7
 
 # Player stats constants
@@ -45,7 +46,7 @@ LEFT_FACING = 1
 # UI CONSTANTS
 HEALTH_BAR_LEFT = 10
 HEALTH_BAR_RIGHT = 150
-HEALTH_BAR_TOP = 580
+HEALTH_BAR_TOP = 590
 HEALTH_BAR_BOTTOM = 565
 WEAPON_BOX_SIZE = 75
 UI_FONT = 'fonts/joystix.ttf'
@@ -168,7 +169,7 @@ class PlayerCharacter(arcade.Sprite):
                 pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt8.mp3'))
             elif randint == 9:
                 pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt9.mp3'))
-        
+
     def update_animation(self, delta_time: float = 1 / 60):
 
         if self.change_x < 0 and (self.character_face_direction == "right" or self.character_face_direction == "down"
@@ -323,6 +324,7 @@ class MyGame(arcade.Window):
         self.enemy_projectile_list = None
         self.upgrade_list = None
         self.weapon_list = None
+        self.wall_list = None
 
         # Set up the player info
         self.player_sprite = None
@@ -332,6 +334,9 @@ class MyGame(arcade.Window):
         self.weapon_sprite = None
         self.bombs_left = None
         self.last_fire = None
+
+        # Physics engine so we don't run into walls.
+        self.physics_engine = None
 
         # Set up the key presses
         self.w_pressed = False
@@ -373,6 +378,7 @@ class MyGame(arcade.Window):
         self.upgrade_list = arcade.SpriteList()
         self.enemy_projectile_list = arcade.SpriteList()
         self.weapon_list = arcade.SpriteList()
+        self.wall_list = arcade.SpriteList()
 
         # Score
         self.score = 0
@@ -391,6 +397,28 @@ class MyGame(arcade.Window):
         self.weapon_list.append(self.weapon_sprite)
 
         self.time = 0
+
+        # Drawing the walls for the bottom and top
+        for i in range(20):
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
+            wall.center_x = i*64
+            wall.center_y = -25
+            self.wall_list.append(wall)
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
+            wall.center_x = i*64
+            wall.center_y = 625
+            self.wall_list.append(wall)
+        for i in range(10):
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
+            wall.center_x = -25
+            wall.center_y = i*64
+            self.wall_list.append(wall)
+            wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
+            wall.center_x = 825
+            wall.center_y = i*64
+            self.wall_list.append(wall)
+
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
 
         # convert weapon dictionary into list
         self.weapon_graphics = []
@@ -433,13 +461,13 @@ class MyGame(arcade.Window):
             elif upgrade_type == "Boomerang":
                 upgrade = Upgrade("images/yoyo_upgrade.png", 0.15, "Boomerang")
 
-
             if upgrade:  # check if upgrade has a value
                 upgrade.center_x = random.randrange(SCREEN_WIDTH)
                 upgrade.center_y = random.randrange(SCREEN_HEIGHT)
 
                 # Adding the upgrade to upgrade_list
                 self.upgrade_list.append(upgrade)
+
     def generate_enemies(self):
         # Randomly generating Cows
         if random.randrange(60) == 0:
@@ -520,17 +548,16 @@ class MyGame(arcade.Window):
                         splinter_projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_SMALL_BANANA,
                                                                   target_x, target_y, projectile.position, 0)
                         self.projectile_list.append(splinter_projectile)
-            
+
             if type(projectile) is Boomerang_Projectile:
                 projectile.player_location = self.player_sprite.position
                 if arcade.check_for_collision(projectile, self.player_sprite) and projectile.time_left <= 0:
                     projectile.kill()
-        
+
         for projectile in self.enemy_projectile_list:
             if len(arcade.check_for_collision_with_list(projectile, self.player_list)) > 0:
                 self.player_sprite.damage_player(10)
                 projectile.kill()
-                
 
         # Check for collisions between player and upgrade
         for upgrade in self.upgrade_list:
@@ -601,6 +628,7 @@ class MyGame(arcade.Window):
         self.upgrade_list.draw()
         self.enemy_projectile_list.draw()
         self.weapon_list.draw()
+        self.wall_list.draw()
 
         # Draw UI
         self.show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
@@ -630,10 +658,10 @@ class MyGame(arcade.Window):
         # Speeds are reduced for diagonal movement by 1/sqrt(2) for each axis per the pythagorean theorem.
         if self.w_pressed and not self.s_pressed:
             if self.w_pressed and self.a_pressed:
-                self.player_sprite.change_y += (1/sqrt(2)) * PLAYER_SPEED
-                self.weapon_sprite.change_y += (1/sqrt(2)) * PLAYER_SPEED
-                self.player_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
-                self.weapon_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
+                self.player_sprite.change_y += (1 / sqrt(2)) * PLAYER_SPEED
+                self.weapon_sprite.change_y += (1 / sqrt(2)) * PLAYER_SPEED
+                self.player_sprite.change_x += (1 / sqrt(2)) * -PLAYER_SPEED
+                self.weapon_sprite.change_x += (1 / sqrt(2)) * -PLAYER_SPEED
             elif self.w_pressed and self.d_pressed:
                 self.player_sprite.change_y += (1 / sqrt(2)) * PLAYER_SPEED
                 self.weapon_sprite.change_y += (1 / sqrt(2)) * PLAYER_SPEED
@@ -644,10 +672,10 @@ class MyGame(arcade.Window):
                 self.weapon_sprite.change_y += PLAYER_SPEED
         elif self.s_pressed and not self.w_pressed:
             if self.s_pressed and self.a_pressed:
-                self.player_sprite.change_y += (1/sqrt(2)) * -PLAYER_SPEED
-                self.weapon_sprite.change_y += (1/sqrt(2)) * -PLAYER_SPEED
-                self.player_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
-                self.weapon_sprite.change_x += (1/sqrt(2)) * -PLAYER_SPEED
+                self.player_sprite.change_y += (1 / sqrt(2)) * -PLAYER_SPEED
+                self.weapon_sprite.change_y += (1 / sqrt(2)) * -PLAYER_SPEED
+                self.player_sprite.change_x += (1 / sqrt(2)) * -PLAYER_SPEED
+                self.weapon_sprite.change_x += (1 / sqrt(2)) * -PLAYER_SPEED
             elif self.s_pressed and self.d_pressed:
                 self.player_sprite.change_y += (1 / sqrt(2)) * -PLAYER_SPEED
                 self.weapon_sprite.change_y += (1 / sqrt(2)) * -PLAYER_SPEED
@@ -664,6 +692,9 @@ class MyGame(arcade.Window):
             self.weapon_sprite.change_x += PLAYER_SPEED
 
     def on_update(self, delta_time):
+
+        self.physics_engine.update()
+
         # Updating time and the player sprite
         self.time += delta_time
         self.player_list.update()
