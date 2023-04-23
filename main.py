@@ -569,7 +569,9 @@ class MyGame(arcade.Window):
         # Basic loss condition
         if self.player_sprite.health <= 0:
             self.clear()
-            arcade.draw_text("YOU LOSE", 300, 300, arcade.color.RED, 30)
+            arcade.draw_text("YOU LOSE", 270, 350, arcade.color.RED, 40)
+            arcade.draw_text("Final Score: " + str(self.score), 245, 250, arcade.color.WHITE, 40)
+            pygame.mixer.Channel(6).pause()
 
     def update_player_speed(self):
         self.player_sprite.change_x = 0
