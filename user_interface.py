@@ -57,5 +57,3 @@ def weapon_overlay(weapon_graphics, center_x, center_y, weapon_index):
     selection_box(center_x, center_y)
     weapon_img = weapon_graphics[weapon_index]
     arcade.draw_texture_rectangle(center_x, center_y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, weapon_img)
-
-
