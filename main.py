@@ -7,7 +7,6 @@ from enemies import *
 from projectiles import *
 from user_interface import *
 
-
 # --- Constants ---
 SPRITE_SCALING_PLAYER = 0.8
 SPRITE_SCALING_COW = 0.3
@@ -48,9 +47,8 @@ WEAPON_EQUIPPED_TEXTURES = {
 }
 
 def load_texture_pair(filename):
-    """
-    Load a texture pair, with the second being a mirror image.
-    """
+
+    # Load a texture pair, with the second being a mirror image.
     return [
         arcade.load_texture(filename),
         arcade.load_texture(filename, flipped_horizontally=True)
