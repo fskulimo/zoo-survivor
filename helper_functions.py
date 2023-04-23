@@ -8,4 +8,5 @@ def distance(point1, point2):
     y_square = y_diff * y_diff
 
     distance = math.sqrt(x_square + y_square)
+
     return distance
