@@ -1,9 +1,5 @@
-import random
 import arcade
-import math
 from math import sqrt
-from pygame import mixer
-import pygame
 
 BASIC_PROJECTILE_SPEED = 4
 SEAL_PROJECTILE_SPEED = 5
@@ -113,7 +109,6 @@ class Boomerang_Projectile(arcade.Sprite):
     target_x = None
     target_y = None
 
-
     player_location = (0,0)
     time_left = None
     image = "images/yoyo.png"
@@ -161,7 +156,5 @@ class Boomerang_Projectile(arcade.Sprite):
                     
                 self.center_x -= self.change_x
                 self.center_y -= self.change_y
-                
-            
-        self.time_left -= 1
 
+        self.time_left -= 1

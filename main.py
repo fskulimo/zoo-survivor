@@ -1,13 +1,7 @@
 from cmath import sin, sqrt
 import time
 from helper_functions import distance
-import random
-import arcade
-import math
 import os
-from pygame import mixer
-import pygame
-import math
 
 from enemies import *
 from projectiles import *
@@ -77,7 +71,6 @@ def load_texture_pair(filename):
         arcade.load_texture(filename, flipped_horizontally=True)
     ]
 
-
 class PlayerCharacter(arcade.Sprite):
     def __init__(self):
 
@@ -106,8 +99,6 @@ class PlayerCharacter(arcade.Sprite):
         self.flicker_frames = 0
         self.flicker_duration = 0  # in seconds
         self.flicker_alpha = 255
-
-        # --- Load Textures ---
 
         # Images from Kenney.nl's Sokoban Pack
         main_path = "images/littlePlayer"
@@ -146,7 +137,6 @@ class PlayerCharacter(arcade.Sprite):
             self.hurt_time = time.time()
             if self.health <= 0:
                 self.kill()
-            # Spawn Particles
 
             # Hurt sounds, randomly generated
             randint = random.randint(1, 9)
@@ -171,7 +161,6 @@ class PlayerCharacter(arcade.Sprite):
                 pygame.mixer.Channel(3).play(pygame.mixer.Sound('sounds/hurt9.mp3'))
 
     def update_animation(self, delta_time: float = 1 / 60):
-
         if self.change_x < 0 and (self.character_face_direction == "right" or self.character_face_direction == "down"
                                   or self.character_face_direction == "up"):
             self.character_face_direction = "left"
@@ -187,8 +176,7 @@ class PlayerCharacter(arcade.Sprite):
                                     or self.character_face_direction == "right"):
             self.character_face_direction = "up"
 
-        # --- Walking Animations ---
-
+        # Walking Animations
         if self.character_face_direction == "right":
             # Idle Animation (Right)
             if self.change_x == 0 and self.change_y == 0:
@@ -237,7 +225,6 @@ class PlayerCharacter(arcade.Sprite):
                 frame = self.cur_texture // UPDATES_PER_FRAME
                 self.texture = self.walk_textures_up[frame]
 
-
 class WeaponEquipped(arcade.Sprite):
     def __init__(self, image, scale):
         # Set up parent class
@@ -249,8 +236,6 @@ class WeaponEquipped(arcade.Sprite):
         # Adjust the collision box. Default includes too much empty space
         # side-to-side. Box is centered at sprite center, (0, 0)
         self.points = [[-22, -64], [22, -64], [22, 28], [-22, 28]]
-
-        # --- Load Textures ---
 
         # Load textures for weapon facing left and right
         self.weapon_textures_LR = []
@@ -276,7 +261,6 @@ class WeaponEquipped(arcade.Sprite):
             self.character_face_direction = "up"
 
         # Movement Animations
-
         if self.character_face_direction == "right":
             self.texture = self.weapon_textures_LR[0][1]
             # Ensure the sprite appears
@@ -301,9 +285,7 @@ class Upgrade(arcade.Sprite):
         super().__init__(image, scale)
         self.type = type
 
-
 class MyGame(arcade.Window):
-    """ Our custom Window Class"""
 
     def __init__(self):
         """ Initializer """
@@ -335,7 +317,7 @@ class MyGame(arcade.Window):
         self.bombs_left = None
         self.last_fire = None
 
-        # Physics engine so we don't run into walls.
+        # Physics engine to prevent player from colliding with edge walls
         self.physics_engine = None
 
         # Set up the key presses
@@ -359,14 +341,12 @@ class MyGame(arcade.Window):
         # Initalize timer
         self.time = None
 
-        # Initialize sound
+        # Initialize sound & play music
         mixer.init()
         pygame.mixer.init()
+        pygame.mixer.Channel(6).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
 
         arcade.set_background_color(arcade.color.AMAZON)
-
-        # Plays music
-        pygame.mixer.Channel(6).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -417,6 +397,7 @@ class MyGame(arcade.Window):
             wall.center_y = i*64
             self.wall_list.append(wall)
 
+        # Add walls and player to the physics
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
 
         # convert weapon dictionary into list
@@ -603,11 +584,6 @@ class MyGame(arcade.Window):
                                      font_size=UI_FONT_SIZE, font_name=self.font, align="right", bold=False,
                                      italic=False, width=10)
 
-        # arcade.draw_lrtb_rectangle_filled(10 / 2 + x, text_rect.height / 2 + y, text_rect.width + 20,
-        #                                text_rect.height + 20, UI_BG_COLOR)
-        # arcade.draw_text(text_surf, x, y, TEXT_COLOR)
-        # arcade.draw_lrtb_rectangle_outline(text_rect.width / 2 + x, text_rect.height / 2 + y, text_rect.width + 20,
-        #                                 text_rect.height + 20, UI_BORDER_COLOR, 3)
 
     def selection_box(self, x, y):
         arcade.draw_rectangle_filled(x, y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, UI_BG_COLOR)
@@ -620,7 +596,7 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
 
-        """ Draw everything """
+        # Draw the main elements
         self.clear()
         self.enemy_list.draw()
         self.player_list.draw()
@@ -629,11 +605,7 @@ class MyGame(arcade.Window):
         self.enemy_projectile_list.draw()
         self.weapon_list.draw()
         self.wall_list.draw()
-
-
-        # Draw UI
         self.show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
-        # self.show_score(self.score)
         self.weapon_overlay(45, 45, self.weapon_index)
 
         # Put the text on the screen.
@@ -694,11 +666,10 @@ class MyGame(arcade.Window):
 
     def on_update(self, delta_time):
 
-        self.physics_engine.update()
-
-        # Updating time and the player sprite
+        # Updating time, physics, and the player sprite
         self.time += delta_time
         self.player_list.update()
+        self.physics_engine.update()
 
         # Update the players animation
         self.player_list.update_animation()
@@ -830,13 +801,11 @@ class MyGame(arcade.Window):
             self.d_pressed = False
             self.update_player_speed()
 
-
 def main():
     """ Main function """
     window = MyGame()
     window.setup()
     arcade.run()
-
 
 if __name__ == "__main__":
     main()

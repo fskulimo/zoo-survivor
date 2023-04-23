@@ -13,8 +13,6 @@ SPRITE_SCALING_COW = 0.3
 SPRITE_SCALING_SEAL = 0.4
 SPRITE_SCALING_BULL = 0.4
 
-
-
 class Enemy(arcade.Sprite):
     """
     This class represents the cows on our screen. It is a child class of
@@ -23,7 +21,6 @@ class Enemy(arcade.Sprite):
     # Fields of Enemy class
     health = None
     move_speed = 0
-
 
     # Constructor
     def __init__(self, image, scale):
