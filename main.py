@@ -560,13 +560,13 @@ class MyGame(arcade.Window):
         show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
         weapon_overlay(self.weapon_graphics, 45, 45, self.weapon_index)
 
-        # Put the text on the screen.
+        # Puts text on the screen for score and health
         output = f"Score: {self.score}"
         arcade.draw_text(output, 10, 90, arcade.color.WHITE, 13)
         # arcade.draw_text("Weapon Selected: " + self.weapon_selected, 550, 20, arcade.color.WHITE, 14)
         arcade.draw_text("Health: " + self.player_sprite.health.__str__(), 10, 550, arcade.color.RED, 12)
 
-        # Basic loss condition. TODO do this with scenes instead
+        # Basic loss condition
         if self.player_sprite.health <= 0:
             self.clear()
             arcade.draw_text("YOU LOSE", 300, 300, arcade.color.RED, 30)
