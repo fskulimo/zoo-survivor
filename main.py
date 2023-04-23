@@ -570,7 +570,9 @@ class MyGame(arcade.Window):
         if self.player_sprite.health <= 0:
             self.clear()
             arcade.draw_text("YOU LOSE", 270, 350, arcade.color.RED, 40)
-            arcade.draw_text("Final Score: " + str(self.score), 245, 250, arcade.color.WHITE, 40)
+            arcade.draw_text("Final Score: " + str(self.score), 240, 250, arcade.color.WHITE, 40)
+            pygame.mixer.Channel(0).pause()
+            pygame.mixer.Channel(3).pause()
             pygame.mixer.Channel(6).pause()
 
     def update_player_speed(self):
@@ -707,19 +709,25 @@ class MyGame(arcade.Window):
             self.update_player_speed()
 
         if key == arcade.key.SPACE:
+            projectile_created = False  # Initialize the flag as False
             weapon_delta_time = self.time - self.last_fire
             if self.weapon_selected == "Basic" and weapon_delta_time > 0.3:
                 projectile = Basic_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
                 pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/pop.mp3'))
+                projectile_created = True
             elif self.weapon_selected == "Splinter" and weapon_delta_time > 2:
                 projectile = Splinter_Projectile("images/banana.png", SPRITE_SCALING_LARGE_BANANA, self.mouse_x,
                                                  self.mouse_y, self.player_sprite.position, SPLINTER_BOUNCES)
                 pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/throw.mp3'))
+                projectile_created = True
             elif self.weapon_selected == "Boomerang" and weapon_delta_time > 0.7:
                 projectile = Boomerang_Projectile(self.mouse_x, self.mouse_y, self.player_sprite.position)
                 pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/boomerang.wav'))
-            self.projectile_list.append(projectile)
-            self.last_fire = self.time
+                projectile_created = True
+
+            if projectile_created:  # Only append the projectile and perform other operations if the flag is True
+                self.projectile_list.append(projectile)
+                self.last_fire = self.time
 
         if key == arcade.key.N:
             pygame.mixer.Channel(6).pause()
