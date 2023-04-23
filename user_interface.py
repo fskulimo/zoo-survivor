@@ -28,6 +28,9 @@ def show_health_bar(current, max_amount, color):
     arcade.draw_lrtb_rectangle_filled(HEALTH_BAR_LEFT, HEALTH_BAR_RIGHT,
                                       HEALTH_BAR_TOP, HEALTH_BAR_BOTTOM, UI_BG_COLOR)
 
+    # Keep current value between 0 and max_amount, preventing crashes on death
+    current = max(0, min(current, max_amount))
+
     # converting stat to pixel
     health_bar_width = HEALTH_BAR_RIGHT - HEALTH_BAR_LEFT
     ratio = current / max_amount
@@ -39,6 +42,7 @@ def show_health_bar(current, max_amount, color):
                                       color)
     arcade.draw_lrtb_rectangle_outline(10, updated_bar_right, HEALTH_BAR_TOP - 1, HEALTH_BAR_BOTTOM + 1,
                                        UI_BORDER_COLOR, 3)
+
 
 def show_score(score):
     text_surf = f"Score: {score}"
