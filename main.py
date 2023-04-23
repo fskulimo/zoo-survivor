@@ -1,10 +1,12 @@
 from cmath import sin, sqrt
 import time
-from helper_functions import distance
 import os
 
+from helper_functions import *
 from enemies import *
 from projectiles import *
+from user_interface import *
+
 
 # --- Constants ---
 SPRITE_SCALING_PLAYER = 0.8
@@ -37,22 +39,6 @@ SPLINTER_BOUNCES = 5
 RIGHT_FACING = 0
 LEFT_FACING = 1
 
-# UI CONSTANTS
-HEALTH_BAR_LEFT = 10
-HEALTH_BAR_RIGHT = 150
-HEALTH_BAR_TOP = 590
-HEALTH_BAR_BOTTOM = 565
-WEAPON_BOX_SIZE = 75
-UI_FONT = 'fonts/joystix.ttf'
-UI_FONT_SIZE = 18
-
-# UI colors
-UI_BG_COLOR = arcade.color.BLACK
-UI_BORDER_COLOR = arcade.color.BLACK
-HEALTH_COLOR = arcade.color.RED
-UI_BORDER_COLOR_ACTIVE = arcade.color.TUSCAN_BROWN
-TEXT_COLOR = arcade.color.WHEAT
-
 UPGRADE_TYPES = ["Basic", "Splinter", "Boomerang"]
 
 WEAPON_EQUIPPED_TEXTURES = {
@@ -60,7 +46,6 @@ WEAPON_EQUIPPED_TEXTURES = {
     "Splinter": "images/banana_gun.png",
     "Boomerang": "images/yoyo.png"
 }
-
 
 def load_texture_pair(filename):
     """
@@ -557,42 +542,9 @@ class MyGame(arcade.Window):
                 enemy.kill()
                 self.score += 1
 
-        # UI Functions
-
-    def show_health_bar(self, current, max_amount, color):
-        # draw bg
-        arcade.draw_lrtb_rectangle_filled(HEALTH_BAR_LEFT, HEALTH_BAR_RIGHT,
-                                          HEALTH_BAR_TOP, HEALTH_BAR_BOTTOM, UI_BG_COLOR)
-
-        # converting stat to pixel
-        health_bar_width = HEALTH_BAR_RIGHT - HEALTH_BAR_LEFT
-        ratio = current / max_amount
-        current_width = health_bar_width * ratio
-        updated_bar_right = current_width + HEALTH_BAR_LEFT
-
-        # drawing the bar
-        arcade.draw_lrtb_rectangle_filled(HEALTH_BAR_LEFT, updated_bar_right, HEALTH_BAR_TOP, HEALTH_BAR_BOTTOM,
-                                          color)
-        arcade.draw_lrtb_rectangle_outline(10, updated_bar_right, HEALTH_BAR_TOP - 1, HEALTH_BAR_BOTTOM + 1,
-                                           UI_BORDER_COLOR, 3)
-
-    def show_score(self, score):
-        text_surf = f"Score: {score}"
-        x = SCREEN_WIDTH - 200
-        y = 20
-        text_rect = arcade.draw_text(text_surf, x, y, TEXT_COLOR, anchor_x="right", anchor_y="bottom",
-                                     font_size=UI_FONT_SIZE, font_name=self.font, align="right", bold=False,
-                                     italic=False, width=10)
-
-
-    def selection_box(self, x, y):
-        arcade.draw_rectangle_filled(x, y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, UI_BG_COLOR)
-        arcade.draw_rectangle_outline(x, y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, UI_BORDER_COLOR_ACTIVE)
-
-    def weapon_overlay(self, center_x, center_y, weapon_index):
-        self.selection_box(center_x, center_y)
-        weapon_img = self.weapon_graphics[weapon_index]
-        arcade.draw_texture_rectangle(center_x, center_y, WEAPON_BOX_SIZE, WEAPON_BOX_SIZE, weapon_img)
+    def draw_UI(self):
+        self.show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
+        self.weapon_overlay(45, 45, self.weapon_index)
 
     def on_draw(self):
 
@@ -605,8 +557,8 @@ class MyGame(arcade.Window):
         self.enemy_projectile_list.draw()
         self.weapon_list.draw()
         self.wall_list.draw()
-        self.show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
-        self.weapon_overlay(45, 45, self.weapon_index)
+        show_health_bar(self.player_sprite.health, STARTING_PLAYER_HEALTH, HEALTH_COLOR)
+        weapon_overlay(self.weapon_graphics, 45, 45, self.weapon_index)
 
         # Put the text on the screen.
         output = f"Score: {self.score}"
