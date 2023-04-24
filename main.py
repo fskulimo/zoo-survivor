@@ -280,6 +280,11 @@ class MenuView(arcade.View):
         self.player_list = None
         self.player_sprite = None
 
+        # Sets up sounds and plays lobby music
+        mixer.init()
+        pygame.mixer.init()
+        pygame.mixer.Channel(6).play(pygame.mixer.Sound('sounds/Lobby Music.mp3'), loops=-1)
+
         self.font_kenney = arcade.Text(
             "Zoo Survivor!",
             SCREEN_WIDTH / 2 - 212, SCREEN_HEIGHT / 2 + 180,
@@ -441,9 +446,7 @@ class GameView(arcade.View):
         # Game view variables
         self.menu_state = "main"
 
-        # Initialize sound & play music
-        mixer.init()
-        pygame.mixer.init()
+        # Take over lobby music and play the game track
         pygame.mixer.Channel(6).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
 
         arcade.set_background_color(arcade.color.AMAZON)
