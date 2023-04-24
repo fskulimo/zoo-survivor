@@ -391,6 +391,7 @@ class MenuView(arcade.View):
 
         self.player_sprite.draw()
 
+
 class GameView(arcade.View):
 
     def __init__(self):
@@ -917,6 +918,7 @@ class GameOverView(arcade.View):
         self.game_over.draw()
         arcade.draw_text("Final Score: " + str(self.score), 240, 250, arcade.color.WHITE, 40)
 
+
 class HelpView(arcade.View):
     def __init__(self):
         super().__init__()
@@ -927,7 +929,7 @@ class HelpView(arcade.View):
 
         self.controls = arcade.Text(
             "Controls",
-            SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 100,
+            SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 130,
             arcade.color.YELLOW,
             40,
             font_name="Kenney Mini Square",
@@ -951,12 +953,13 @@ class HelpView(arcade.View):
 
         # Create the buttons (images from Kenney NL's assets: https://kenney.nl/assets?q=button)
         back_button = arcade.gui.UITextureButton(text="Back", width=200,
-                                                  texture=arcade.load_texture("images/buttonLong_brown.png"),
-                                                  texture_hovered=arcade.load_texture("images/green_button.png"),
-                                                  texture_pressed=arcade.load_texture(
-                                                      "images/buttonLong_brown_pressed.png"),
-                                                  style=default_style)
-        self.v_box.add(back_button.with_space_around(top=300))
+                                                 texture=arcade.load_texture("images/buttonLong_brown.png"),
+                                                 texture_hovered=arcade.load_texture("images/green_button.png"),
+                                                 texture_pressed=arcade.load_texture(
+                                                     "images/buttonLong_brown_pressed.png"),
+                                                 style=default_style)
+        self.v_box.add(back_button.with_space_around(top=430))
+
         @back_button.event("on_click")
         def on_click_start(event):
             print("Start:", event)
@@ -982,20 +985,24 @@ class HelpView(arcade.View):
         # Draw the background image.
         arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
                                             self.background)
-        # Draw game over text
+        # Draw help/controls text
         self.controls.draw()
         arcade.draw_text("Use the 'W', 'S', 'A', 'D' keys to move the player up, down, "
-                         "left, and right.", 170, 350, arcade.color.WHITE, 13)
-        arcade.draw_text("The player starts the game with the carrot gun, ", 190, 330, arcade.color.WHITE, 13)
-        arcade.draw_text("however weapons can be picked up off the ground.", 190, 310, arcade.color.WHITE, 13)
-        arcade.draw_text("Use the 'Spacebar' to fire weapons, using your cursor to aim.", 170, 290, arcade.color.WHITE, 13)
+                         "left, and right.", 170, 370, arcade.color.WHITE, 13)
+        arcade.draw_text("The player starts the game with the carrot gun, ", 170, 340, arcade.color.WHITE, 13)
+        arcade.draw_text("however weapons can be picked up off the ground.", 170, 310, arcade.color.WHITE, 13)
+        arcade.draw_text("Use the 'Spacebar' to fire weapons, using your cursor to aim.", 170, 280, arcade.color.WHITE,
+                         13)
         arcade.draw_text("The player also starts off with two carrot bombs that can "
-                         "be used at anytime, ", 170, 270, arcade.color.WHITE, 13)
-        arcade.draw_text("make no waste of these, as you cannot pick up more.", 190, 250, arcade.color.WHITE, 13)
-        arcade.draw_text("Use the 'P' key to throw bombs", 190, 230, arcade.color.WHITE, 13)
+                         "be used at anytime, ", 170, 250, arcade.color.WHITE, 13)
+        arcade.draw_text("make no waste of these, as you cannot pick up more.", 170, 190, arcade.color.WHITE, 13)
+        arcade.draw_text("Use the 'P' key to throw bombs", 170, 220, arcade.color.WHITE, 13)
+        arcade.draw_text("The player begins to regenerate health if he is far enough from all animals.", 170, 160, arcade.color.WHITE, 13)
 
         # Draw button widgets
         self.manager.draw()
+
+
 def main():
     # Short delay added to give brief time for initialization, sometimes keyboard inputs don't work without this
     time.sleep(0.05)
