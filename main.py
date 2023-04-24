@@ -446,7 +446,7 @@ class GameView(arcade.View):
         # Game view variables
         self.menu_state = "main"
 
-        # Take over lobby music and play the game track
+        # Takes over lobby music and play the game track
         pygame.mixer.Channel(6).play(pygame.mixer.Sound('sounds/Game Track.mp3'), loops=-1)
 
         arcade.set_background_color(arcade.color.AMAZON)
