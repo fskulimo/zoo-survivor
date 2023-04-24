@@ -1,4 +1,5 @@
 from cmath import sin, sqrt
+import arcade.gui
 import time
 import os
 
@@ -46,13 +47,14 @@ WEAPON_EQUIPPED_TEXTURES = {
     "Boomerang": "images/yoyo.png"
 }
 
-def load_texture_pair(filename):
 
+def load_texture_pair(filename):
     # Load a texture pair, with the second being a mirror image.
     return [
         arcade.load_texture(filename),
         arcade.load_texture(filename, flipped_horizontally=True)
     ]
+
 
 class PlayerCharacter(arcade.Sprite):
     def __init__(self):
@@ -208,6 +210,7 @@ class PlayerCharacter(arcade.Sprite):
                 frame = self.cur_texture // UPDATES_PER_FRAME
                 self.texture = self.walk_textures_up[frame]
 
+
 class WeaponEquipped(arcade.Sprite):
     def __init__(self, image, scale):
         # Set up parent class
@@ -268,12 +271,127 @@ class Upgrade(arcade.Sprite):
         super().__init__(image, scale)
         self.type = type
 
-class MyGame(arcade.Window):
+
+class MenuView(arcade.View):
+    def __init__(self):
+        super().__init__()
+
+        # Set up the player info
+        self.player_list = None
+        self.player_sprite = None
+
+        self.font_kenney = arcade.Text(
+            "Zoo Survivor!",
+            SCREEN_WIDTH / 2 - 212, SCREEN_HEIGHT / 2 + 180,
+            arcade.color.BLACK,
+            44,
+            font_name="Kenney Mini Square",
+        )
+
+        # Variables for moving background
+        self.background = arcade.load_texture("images/full-bg.png")
+        self.scroll_position = 0
+        self.bottom_left_x = 0
+        self.tiles = math.ceil(SCREEN_WIDTH / self.background.width) + 1
+        print(self.tiles)
+
+        # a UIManager to handle the UI.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Render button
+        default_style = {
+            "font_name": "Kenney Blocks",
+            "font_size": 18,
+            "font_color": arcade.color.GHOST_WHITE,
+            "border_width": 2,
+            "border_color": None,
+        }
+
+        # Create the buttons (images from Kenney NL's assets: https://kenney.nl/assets?q=button)
+        start_button = arcade.gui.UITextureButton(text="Start Game", width=200,
+                                                  texture=arcade.load_texture("images/buttonLong_brown.png"),
+                                                  texture_hovered=arcade.load_texture("images/green_button.png"),
+                                                  texture_pressed=arcade.load_texture(
+                                                      "images/buttonLong_brown_pressed.png"),
+                                                  style=default_style)
+        self.v_box.add(start_button.with_space_around(bottom=22))
+
+        help_button = arcade.gui.UITextureButton(text="Help", width=200,
+                                                 texture=arcade.load_texture("images/buttonLong_brown.png"),
+                                                 texture_hovered=arcade.load_texture("images/blue_button.png"),
+                                                 texture_pressed=arcade.load_texture(
+                                                     "images/buttonLong_brown_pressed.png"),
+                                                 style=default_style)
+        self.v_box.add(help_button.with_space_around(bottom=22))
+
+        quit_button = arcade.gui.UITextureButton(text="Quit", width=200,
+                                                 texture=arcade.load_texture("images/buttonLong_brown.png"),
+                                                 texture_hovered=arcade.load_texture("images/red_button.png"),
+                                                 texture_pressed=arcade.load_texture(
+                                                     "images/buttonLong_brown_pressed.png"),
+                                                 style=default_style)
+        self.v_box.add(quit_button.with_space_around(bottom=70))
+
+        # Use decorators to handle on_click events
+        @start_button.event("on_click")
+        def on_click_start(event):
+            print("Start:", event)
+            game_view = GameView()
+            game_view.setup()
+            self.window.show_view(game_view)
+
+        @help_button.event("on_click")
+        def on_click_help(event):
+            print("Help:", event)
+            help_view = HelpView()
+            self.window.show_view(help_view)
+
+        @quit_button.event("on_click")
+        def on_click_quit(event):
+            print("Program terminated manually!")
+            arcade.exit()
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.v_box)
+        )
+
+    def setup(self):
+        # Set up the player
+        self.player_list = arcade.SpriteList()
+        self.player_sprite = arcade.Sprite("images/littlePlayer_walkLR_0.png")
+        self.player_sprite.center_x = 460
+        self.player_sprite.center_y = 120
+        self.player_sprite.scale = 1.7
+        self.player_list.append(self.player_sprite)
+
+    def on_show_view(self):
+        arcade.set_background_color(arcade.color.WHITE)
+
+    def on_draw(self):
+        arcade.start_render()
+
+        arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.background)
+        # Draw game title
+        self.font_kenney.draw()
+        # Draw button widgets
+        self.manager.draw()
+
+        self.player_sprite.draw()
+
+class GameView(arcade.View):
 
     def __init__(self):
         """ Initializer """
         # Call the parent class initializer
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+        super().__init__()
 
         # Set the working directory (where we expect to find files) to the same
         # directory this .py file is in. You can leave this out of your own
@@ -314,15 +432,14 @@ class MyGame(arcade.Window):
         self.mouse_x = 0
         self.mouse_y = 0
 
-        # Don't show the mouse cursor
-        self.set_mouse_visible(True)
-
         # Set up the UI
-        self.font = arcade.load_font(UI_FONT)
         self.weapon_graphics = None
 
         # Initalize timer
         self.time = None
+
+        # Game view variables
+        self.menu_state = "main"
 
         # Initialize sound & play music
         mixer.init()
@@ -363,21 +480,21 @@ class MyGame(arcade.Window):
         # Drawing the walls for the bottom and top
         for i in range(20):
             wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
-            wall.center_x = i*64
+            wall.center_x = i * 64
             wall.center_y = -25
             self.wall_list.append(wall)
             wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
-            wall.center_x = i*64
+            wall.center_x = i * 64
             wall.center_y = 625
             self.wall_list.append(wall)
         for i in range(10):
             wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
             wall.center_x = -25
-            wall.center_y = i*64
+            wall.center_y = i * 64
             self.wall_list.append(wall)
             wall = arcade.Sprite(":resources:images/tiles/grassCenter.png", SPRITE_SCALING_WALL)
             wall.center_x = 825
-            wall.center_y = i*64
+            wall.center_y = i * 64
             self.wall_list.append(wall)
 
         # Add walls and player to the physics
@@ -567,11 +684,9 @@ class MyGame(arcade.Window):
         # Basic loss condition
         if self.player_sprite.health <= 0:
             self.clear()
-            arcade.draw_text("YOU LOSE", 270, 350, arcade.color.RED, 40)
-            arcade.draw_text("Final Score: " + str(self.score), 240, 250, arcade.color.WHITE, 40)
-            pygame.mixer.Channel(0).pause()
-            pygame.mixer.Channel(3).pause()
-            pygame.mixer.Channel(6).pause()
+            # Change to the Game Over screen
+            game_over = GameOverView(self.score)
+            self.window.show_view(game_over)
 
     def update_player_speed(self):
         self.player_sprite.change_x = 0
@@ -761,13 +876,134 @@ class MyGame(arcade.Window):
             self.d_pressed = False
             self.update_player_speed()
 
+
+class GameOverView(arcade.View):
+    def __init__(self, score):
+        super().__init__()
+
+        # Background image will be stored in this variable, load it.
+        # Image from Kenney NL's resources:
+        # https://wallpaper-gallery.net/single/free-background-images/free-background-images-22.html
+        self.background = arcade.load_texture(":resources:images/backgrounds/stars.png")
+
+        self.game_over = arcade.Text(
+            "GAME OVER!",
+            SCREEN_WIDTH / 2 - 182, SCREEN_HEIGHT / 2 + 20,
+            arcade.color.RUBY,
+            50,
+            font_name="Kenney Mini Square",
+        )
+        self.score = score
+
+        # Pause sounds
+        pygame.mixer.Channel(0).pause()
+        pygame.mixer.Channel(3).pause()
+        pygame.mixer.Channel(6).pause()
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        # This command has to happen before we start drawing
+        self.clear()
+
+        # Draw the background image.
+        arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
+        # Draw game over text
+        self.game_over.draw()
+        arcade.draw_text("Final Score: " + str(self.score), 240, 250, arcade.color.WHITE, 40)
+
+class HelpView(arcade.View):
+    def __init__(self):
+        super().__init__()
+
+        # Background image will be stored in this variable, load it.
+        # Image from Kenney NL's resources:
+        self.background = arcade.load_texture(":resources:images/backgrounds/abstract_1.jpg")
+
+        self.controls = arcade.Text(
+            "Controls",
+            SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 100,
+            arcade.color.YELLOW,
+            40,
+            font_name="Kenney Mini Square",
+        )
+
+        # a UIManager to handle the UI.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Render button
+        default_style = {
+            "font_name": "Kenney Blocks",
+            "font_size": 18,
+            "font_color": arcade.color.GHOST_WHITE,
+            "border_width": 2,
+            "border_color": None,
+        }
+
+        # Create the buttons (images from Kenney NL's assets: https://kenney.nl/assets?q=button)
+        back_button = arcade.gui.UITextureButton(text="Back", width=200,
+                                                  texture=arcade.load_texture("images/buttonLong_brown.png"),
+                                                  texture_hovered=arcade.load_texture("images/green_button.png"),
+                                                  texture_pressed=arcade.load_texture(
+                                                      "images/buttonLong_brown_pressed.png"),
+                                                  style=default_style)
+        self.v_box.add(back_button.with_space_around(top=300))
+        @back_button.event("on_click")
+        def on_click_start(event):
+            print("Start:", event)
+            main_menu = MenuView()
+            main_menu.setup()
+            self.window.show_view(main_menu)
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.v_box)
+        )
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        # This command has to happen before we start drawing
+        self.clear()
+
+        # Draw the background image.
+        arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
+        # Draw game over text
+        self.controls.draw()
+        arcade.draw_text("Use the 'W', 'S', 'A', 'D' keys to move the player up, down, "
+                         "left, and right.", 170, 350, arcade.color.WHITE, 13)
+        arcade.draw_text("The player starts the game with the carrot gun, ", 190, 330, arcade.color.WHITE, 13)
+        arcade.draw_text("however weapons can be picked up off the ground.", 190, 310, arcade.color.WHITE, 13)
+        arcade.draw_text("Use the 'Spacebar' to fire weapons, using your cursor to aim.", 170, 290, arcade.color.WHITE, 13)
+        arcade.draw_text("The player also starts off with two carrot bombs that can "
+                         "be used at anytime, ", 170, 270, arcade.color.WHITE, 13)
+        arcade.draw_text("make no waste of these, as you cannot pick up more.", 190, 250, arcade.color.WHITE, 13)
+        arcade.draw_text("Use the 'P' key to throw bombs", 190, 230, arcade.color.WHITE, 13)
+
+        # Draw button widgets
+        self.manager.draw()
 def main():
     # Short delay added to give brief time for initialization, sometimes keyboard inputs don't work without this
     time.sleep(0.05)
 
-    window = MyGame()
-    window.setup()
+    # Main menu/game setup
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    main_menu = MenuView()
+    main_menu.setup()
+    window.show_view(main_menu)
     arcade.run()
+
 
 if __name__ == "__main__":
     main()
