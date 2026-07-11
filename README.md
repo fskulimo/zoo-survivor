@@ -9,9 +9,9 @@ are all coming for you. Hold out as long as you can with an escalating arsenal o
 food-themed weapons. Your score is how long you survive.
 
 Built as the final team project for CS 205 (University of Vermont, spring 2023) by a
-team of four. Worth saying up front: this predates AI-assisted coding. Every line of
+team of four. Worth saying up front: **this predates AI-assisted coding. Every line of
 code in this repo was written by hand, by us, the old way: reading the Arcade docs,
-breaking things, and fixing them at 2am.
+breaking things, and fixing them at 2am.**
 
 <p align="center">
   <img src="docs/gameplay.gif" width="800"
