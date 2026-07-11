@@ -1,89 +1,102 @@
-# 🦓 Zoo Survivor!
+# Zoo Survivor
 
-> An endless top-down wave-survival game — hold out as long as you can against a stampede of runaway zoo animals, armed with an escalating arsenal of food-themed weapons.
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![Engine](https://img.shields.io/badge/Engine-Python%20Arcade-2ea44f)
+![Built](https://img.shields.io/badge/Built-Spring%202023%2C%20by%20hand-blue)
 
-<p>
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white">
-  <img alt="Arcade" src="https://img.shields.io/badge/Engine-Python%20Arcade-2ea44f">
-  <img alt="Audio" src="https://img.shields.io/badge/Audio-Pygame%20mixer-1f425f">
-  <img alt="Status" src="https://img.shields.io/badge/Type-Academic%20team%20project-blue">
+**An endless top-down wave-survival game.** The animals have escaped the zoo and they
+are all coming for you. Hold out as long as you can with an escalating arsenal of
+food-themed weapons. Your score is how long you survive.
+
+Built as the final team project for CS 205 (University of Vermont, spring 2023) by a
+team of four. Worth saying up front: this predates AI-assisted coding. Every line of
+code in this repo was written by hand, by us, the old way: reading the Arcade docs,
+breaking things, and fixing them at 2am.
+
+<p align="center">
+  <img src="docs/gameplay.gif" width="800"
+       alt="Zoo Survivor gameplay: kiting a herd of animals while firing the carrot gun" />
 </p>
 
-Built as the final project for **CS 205 (University of Vermont, Spring 2023)** by a team of four. The goal is simple and unforgiving: **survive**. Waves of animals spawn endlessly and hunt you down — your score is how long you last.
+## The game
 
----
+You drop into an open field with a carrot gun and two carrot bombs. Animals spawn
+endlessly and scale up the longer you last. Aim with the mouse, fire with spacebar,
+and grab the weapon upgrades that appear around the map.
 
-## 🎮 Gameplay
+Each enemy has its own AI:
 
-You start with a **carrot gun** and **two carrot bombs**, dropped into an open field as the animals close in. Aim with the mouse, fire, dodge, and scoop up weapon upgrades that spawn around the map. Stay alive.
+- **Cow** chases you down relentlessly.
+- **Seal** keeps its distance and fires projectiles at you.
+- **Bull** winds up and charges in a straight line.
 
-- **Endless waves.** Enemies are generated continuously and scale up the longer you survive.
-- **Three enemy behaviours**, each with its own AI:
-  - 🐄 **Cow** — relentlessly chases you down.
-  - 🦭 **Seal** — keeps its distance and fires projectiles at your position.
-  - 🐂 **Bull** — winds up and *charges* in a straight line.
-- **Weapon upgrades** drop across the field — swap up from the starter carrot gun to stronger arms, including splitting-shot and boomerang projectiles.
-- **Health regeneration.** Break away and put distance between yourself and the herd, and your character slowly heals.
-- **Panic button.** Two **carrot bombs** (`P`) clear out a sticky situation when you're cornered — use them wisely.
-- **Four screens/states** — main menu, gameplay, a help/how-to-play screen, and a game-over score screen.
+Break away from the herd and your health slowly regenerates. Get cornered and the
+carrot bombs (`P`, two per run) are your way out. Upgrades include splitting shots
+and a returning boomerang.
 
-## ⌨️ Controls
+## Controls
 
 | Input | Action |
 |---|---|
-| `W` `A` `S` `D` | Move the player |
-| **Mouse** | Aim |
-| `Spacebar` | Fire a projectile toward the cursor |
-| `P` | Detonate a carrot bomb (2 uses per run) |
-| `N` | Stop the music |
-| `M` | Stop / restart the music |
+| `W` `A` `S` `D` | Move |
+| Mouse | Aim |
+| `Spacebar` | Fire toward the cursor |
+| `P` | Carrot bomb (2 per run) |
+| `M` / `N` | Music on / off |
 | `Esc` | Quit |
 
-## 🚀 Getting Started
+## Run it
 
-**Requirements:** Python **3.11** and the [Python Arcade](https://api.arcade.academy/) game library (Pygame's `mixer` is used for audio).
+Requires Python 3.11 (the Arcade version this was built on doesn't run on newer
+Pythons).
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/fskulimo/zoo-survivor.git
 cd zoo-survivor
-
-# 2. Install dependencies
-pip install arcade pygame
-
-# 3. Play
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 python main.py
 ```
 
-## 🗂️ Project Structure
+## How it's built
 
 | File | Responsibility |
 |---|---|
-| `main.py` | Game entry point — window setup, the four `arcade.View` states (Menu / Game / GameOver / Help), the main game loop, player character, collisions, spawning, and UI. |
-| `enemies.py` | Enemy classes — the `Enemy` base (follow-the-player AI) and the `Cow`, `Seal`, and `Bull` subclasses. |
-| `projectiles.py` | Projectile classes — basic aimed shots, splitting "splinter" shots, seal enemy shots, and returning boomerangs. |
-| `user_interface.py` | GUI / on-screen interface elements. |
-| `helper_functions.py` | Shared math/utility helpers. |
-| `update_functions.py` | Per-frame update helpers. |
-| `images/` | Sprite art — player animations, animal enemies, weapons, and UI. |
-| `sounds/` | Music tracks and sound effects. |
+| `main.py` | Entry point: window setup, the four `arcade.View` states (menu, game, help, game over), the main loop, player character, collisions, and spawning. |
+| `enemies.py` | The `Enemy` base class (follow-the-player AI) and the `Cow`, `Seal`, and `Bull` subclasses. |
+| `projectiles.py` | Aimed shots, splitting shots, seal projectiles, and the returning boomerang. |
+| `user_interface.py` | On-screen UI elements. |
+| `helper_functions.py` / `update_functions.py` | Shared math and per-frame update helpers. |
+| `images/`, `sounds/` | Sprites, animation frames, music, and sound effects. |
 
-## 🛠️ Tech Stack
+State-driven `arcade.View` screens, sprite-based entities with per-frame `on_update`
+logic, and inheritance-based enemy and projectile hierarchies.
 
-- **Language:** Python 3.11
-- **Engine:** [Python Arcade](https://api.arcade.academy/) (sprites, views, GUI, collision detection)
-- **Audio:** Pygame `mixer`
-- **Architecture:** state-driven `arcade.View` screens, sprite-based entities with per-frame `on_update` logic, and inheritance-based enemy/projectile hierarchies.
+## Who made what
 
-## 👥 The Team
+A four-person team: **Filip Skulimowski**, **Jonathan Knakal**, **Spencer Brouhard**,
+and **Luke Brown**.
 
-A four-person effort for CS 205 at the University of Vermont:
+- **Filip** built the base game structure, the player: the hand-drawn pixel-art
+  animation set (walk cycles in four directions, idle, hit flicker) and the animation
+  system driving it, the damage cooldown, the health bar and weapon UI, and all four
+  game screens.
+- **Jonathan** wrote the largest share of the gameplay code and, as the team's sound
+  engineer, recorded and produced the sound effects by hand.
+- **Spencer** and **Luke** rounded out the gameplay systems and enemy behaviour.
 
-- **Jonathan Knakal**
-- **Filip Skulimowski**
-- **Spencer Brouhard**
-- **Luke Brown**
+## A note on the assets
 
-## 📜 About this repository
+Honesty section. The player animation frames and the weapon pixel art are original,
+hand-drawn for this game. The animal images and the two music tracks were grabbed
+from around the web during the course crunch, the way student projects tend to do,
+and are preserved here unchanged as part of the archive. The menu buttons are from
+Kenney's free (CC0) UI pack. If you own something here and want it removed, open an
+issue and it's gone.
 
-This is a migrated archive of an academic team project originally developed on the University of Vermont's GitLab. The full commit history from the original spring-2023 development is preserved here. It's shared as a portfolio artifact — it was built for coursework and isn't actively maintained.
+## About this repository
+
+This is a migrated archive of the original spring-2023 project from the University
+of Vermont's GitLab, with the full commit history preserved. It's shared as a
+portfolio piece and isn't actively maintained, but it still runs, and it's still
+fun for a solid ten minutes.
