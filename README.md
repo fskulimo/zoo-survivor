@@ -82,17 +82,18 @@ and **Luke Brown**.
   system driving it, the damage cooldown, the health bar and weapon UI, and all four
   game screens.
 - **Jonathan** wrote the largest share of the gameplay code and, as the team's sound
-  engineer, recorded and produced the sound effects by hand.
+  engineer, did all of the audio: he composed the music tracks and recorded and
+  produced every sound effect by hand.
 - **Spencer** and **Luke** rounded out the gameplay systems and enemy behaviour.
 
 ## A note on the assets
 
 Honesty section. The player animation frames and the weapon pixel art are original,
-hand-drawn for this game. The animal images and the two music tracks were grabbed
-from around the web during the course crunch, the way student projects tend to do,
-and are preserved here unchanged as part of the archive. The menu buttons are from
-Kenney's free (CC0) UI pack. If you own something here and want it removed, open an
-issue and it's gone.
+hand-drawn for this game, and all of the audio (music and sound effects) is original
+work by Jonathan, our sound engineer. The animal images were grabbed from around the
+web during the course crunch, the way student projects tend to do, and are preserved
+here unchanged as part of the archive. The menu buttons are from Kenney's free (CC0)
+UI pack. If you own something here and want it removed, open an issue and it's gone.
 
 ## About this repository
 
